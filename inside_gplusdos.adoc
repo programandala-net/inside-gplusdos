@@ -1,13 +1,14 @@
-||'|S| [IE Eli. 
+= Inside G+DOS
+:author: Stephen Warr
+:revdate: 2016-04-01
 
-By: Stephen Herr.
+== Part 1
 
 This sees the start of what will hopefully become a regular series
 all about G+DOS, how it works,‘what it contains and how you can use
 parts of it in your own programs.
 
-’ The series will probably be the most helpful to PLUS D éwners who;
-
+The series will probably be the most helpful to PLUS D owners who
 know at least a bit about machine code, but in later articles I will
 be including several example routines that less experienced readers
 should find useful. The overall aim of the series is to teach you
@@ -25,14 +26,14 @@ data at 16384. It contains the necessary syntax checking for the new
 disc commands and the ROM calls needed to.execute them. The only
 exception is the POKE @ command which is held completely in ROM.
 
-The problem for us is that most of the time G+D0s just isn't
+The problem for us is that most of the time G+DOS just isn't
 there, it is hidden behind the normal Spectrum ROM and most of the
 time acts as if it didn't exist. Because of this, it is'known as a
 ‘shadow’ ROM (except that half of it is actually shadow RAM,‘but
-donft worry about that too much). The PLUS D only appears, or
-'pages' itself in, if the normal ROM jumps to one of 4 addresses.
-when this occurs, the normal ROM temporarily disappears and‘ is
-replaced by the code held in G+DOS. \ ‘ - «
+don't worry about that too much). The PLUS D only appears, or
+‘pages’ itself in, if the normal ROM jumps to one of 4 addresses.
+when this occurs, the normal ROM temporarily disappears and is
+replaced by the code held in G+DOS.
 
 The PLUS D has no networking, unlike the DISCiPLE, so there is
 still quite a lot of space left in both the ROM and the RAM.
@@ -42,21 +43,19 @@ leaving the normal 48K/128K of RAM untouched and so this is where I
 will be placing routines in future articles. .
 
 The first 167 bytes of PLUS D RAM contain various system
-variables, .tables of data, and a number of addresses which are
-called from the ROM at various points. The POKE @ command affects
-these bytes directly so that POKE @O,7 means poke the first byte of
-G+DOS RAM (at 8192) with.7. The table ,on the next page gives a
+variables, tables of data, and a number of addresses which are
+called from the ROM at various points. The `POKE @` command affects
+these bytes directly so that `POKE @0,7` means poke the first byte of
+G+DOS RAM (at 8192) with 7. The table ,on the next page gives a
 complete list of this area — some you may find useful, others not.
 For each entry, the first column gives the displacement from the
-start of G+DOS RAM, ie. the first number in a ROKE @ command. The
+start of G+DOS RAM, ie. the first number in a `POKE @` command. The
 second column gives the number of bytes used in that particular
 block of data, and the third gives a short desciption of its use and
 the values allowed. The last few entries are_particularly useful as
 they provide a way of directing the ROM to our own routines in RAM.
 
-21
-
-PLUS D §G+DOS[ INTERNAL SYSTEM VARIABLES
+PLUS D G+DOS INTERNAL SYSTEM VARIABLES
 
 DISP BYTE DESCRIPTION
 
@@ -90,7 +89,7 @@ Drive stepping rate in milliseconds. Values 6-255.
 Unused by the PLUS D. _ '
 Number of characters on each printer line.
 
-G+DOs outputs absolute codes to the printer when this
+G+DOS outputs absolute codes to the printer when this
 is zero, otherwise keywords will be expanded, etc.
 Line feed spacing in 1/72's of an inch. .
 Number of line feeds output after each carriage return
@@ -253,18 +252,15 @@ Usually
 a key to
 pushed.
 
-for this month. Next time I will be explaining how the
-itself in, and investigating the mysteries of the gisc
-
-23
 
 ‘handling’
 
 the BASIC commands are tun/syntax’
 
-||'|S|
+That's all for this month. Next time I will be explaining how the
+itself in, and investigating the mysteries of the disc directory.
 
-PART 2.
+== Part 2
 
 As I mentioned last month, there are
 four addresses at which the PLUS D
@@ -321,10 +317,6 @@ the routine does two extra things as
 
 DE nuns
 
-11
-
-By: Stephen Harr.
-
 well. Firstly it loads the data needed
 by the centronics port into the
 channel information area in case the
@@ -352,10 +344,12 @@ because G+DOS RAM is not reset by the
 normal memory reset routine, you can
 produce some strange and sometimes
 particularly unhelpful results if you
-are not careful. Try for instance:-
+are not careful. Try for instance:
 
-pox]: @1:.3,2o1: POKE e1z.4,o':
-POKE @1A5.o: POKE 9143.195
+----
+POKE @143,201: POKE @144,0:
+POKE @145,0: POKE @143,195
+----
 
 The final paging address at location
 102 has two purposes. Whenever you
@@ -646,36 +640,27 @@ type of file not just.an OPENTYPE file
 and the CAT command can also take th
 form CAT 1;"FILENAME". ’
 
-The final piece of delectable
-information is that the
-SAVE dl"f1lename"CODE start,length
-
-command also allows an optional third
-parameter which is the address jumped
-to after the file is loaded back,
-allowing auto—running of machine code
-files.
+The final piece of delectable information is that the `SAVE
+d1"f1lename"CODE start,length` command also allows an optional third
+parameter which is the address jumped to after the file is loaded
+back, allowing auto—running of machine code files.
 
 More next month.
 
-13
-
-INSIDE
-
-Part 3.
+== Part 3
 
 This month I want to look at the
 Disc Directory, this is the same for
 both the PLUS D and its older brother
-the DISC1PLE so there is much in this
-article for DISCiPLE users..
+the DISCiPLE so there is much in this
+article for DISCiPLE users.
 
 Each directory entry takes up 256
 bytes and contains all the data needed
 to load the file that it is referring
 to. The layout is as follows:—
 
-PLUS D[DISGiPLE Dﬂclﬂlﬂ LAYOUT
+PLUS D/DISCiPLE DIRECTORY LAYOUT
 
 BYTE CONTENTS
 0 File Descriptor 0-11
@@ -780,13 +765,9 @@ which entry is being examined.
 Back next month with a super, routine
 for the ?LUS D.
 
-13
-
 Le. if the,
 
-||'|Sl DE EHDDB
-
-Part 4.
+== Part 4
 
 In the issue before last I looked at
 the PLUS D's disc directory. I thought
@@ -1323,28 +1304,21 @@ N LINE ":line: STOP
 1040 DATA 50,62,16,205,165,9,32,91,22
 1,54,13,1,205,151,13,213,2 '
 05,61,7,8,1782
-
-- 1050 DATA 17,254.52,l4,l6,235,2l3,229
-
+1050 DATA 17,254.52,l4,l6,235,2l3,229
 ,126,246,32,7I,26,246,32,1
 s4.32,4,35,19.2os3
-
 1050 DATA 24,242,225,209,6,o.56,3.9,2
 A,231,213,27,26,229,235,h2
 ,121,50,229,2201
-
 1070 DATA 183,237,s2,227,s4,93,9.34,1
 21,s0,235,193,3,237,1s4,2o
 9,225.1,10,o,2417
-
 1080 DATA 237,176,8,18,19,8,18,19,205
 ,40,5o,237,176,2o9,2o5,136
 ,10,40,165,33,2009
-
 1090 DATA 254,52,125.a0,202,124,4,205
 ,155,9,205,151,23,62.80,20
 5,15a,23,229,11o,2432
-
 1100 DATA 3s,0,62.32,2o5,e2,2a,2o9,19
 ,26,19,2A5,205,AO,S0,23S,2
 37,17e,2o5.151,2259
@@ -1373,9 +1347,7 @@ A,231,213,27,26,229,235,h2
 
 Back with more PLUS D secrets soon.
 
-INSIDE
-
-PART 5.
+== Part 5
 
 A I would like to apologise for the
 delay between this article and the
@@ -1400,7 +1372,6 @@ catalogue commend unaffected. The
 program's biggest drawback is that
 data from the directory has to be
 stored in RAM until the final
-
 printout. We have to allow l.25K free
 for this just in case there happen to
 be 80 files on‘ the disc.
@@ -1417,11 +1388,9 @@ BASIC program or anything else
 important.
 
 Still staying with directories for a
-
 moment, if you write disc routines in
 BASIC I'm sure you will have found
 difficulties in accessing the
-
 directory and generally have to resort
 to the LOAD @ command. My new DOS
 (coming out soon) has some powerful
@@ -1431,33 +1400,22 @@ program below may help out. What it
 does is to set up a complete catalogue
 in the string variable a$ which you
 can then examine easily. The only
-
-17
-
-l3+|JDS
-
-By :- Stephen Wart .
-
 warning is that it won't work with
-write protected discs:-
+write protected discs:
 
-l0 OPEN #4;d1"dir_save"OUT
+----
+10 OPEN #4;d1"dir_save"OUT
 20 CAT #4;l
-
 30 CLOSE #*4
-
-40 OPEN #4;dl':dir_save"IN
+40 OPEN #4;d1':dir_save"IN
 50 INPUT #4;a$;a$;a$
-
 50 LET a$='"'
-
 70 INPUT #4;b$
-
 80 IF b$='"' THEN GOTO 100
-90 LET a$=»a$+h$+CH'R$ 13: GOTO 70
+90 LET a$=a$+h$+CHR$ 13: GOTO 70
 100 CLOSE #*5
-
-110 ERASE dl"dir_save"
+110 ERASE d1"dir_save"
+----
 
 It's a little bit limited and is
 best suited, for example, to comparing
@@ -1488,14 +1446,11 @@ the actual file that it's describing.
 Put simply, how do we get at bytes of
 program data? As an introduction,
 let's have a look at the way your disc
-
 drive stores information on your
 discs.
 Disc drives are really serial
-
 devices which means that they can only
 store 1 bit of data at a time just
-
 like tapes. However, from the
 computer's point of view they are
 parallel devices — the PLUS D software
@@ -1510,7 +1465,7 @@ possible to access any part of the
 disc at any time, very quickly and so
 the data can be packed much tighter
 together and can be read a lot faster
-- if something goes wrong, you only
+-- if something goes wrong, you only
 have to wait a short while before
 having another go.
 
@@ -1553,11 +1508,7 @@ sector, the drive head (the part of
 the drive that rests just above the
 disc and receives and sends
 information) stays motionless because
-
-’if it were moving, the vibration would
-
-18
-
+if it were moving, the vibration would
 reduce the reliability almost to zero.
 This means that as the disc rotates,
 the head always stays above a single
@@ -1619,7 +1570,6 @@ you don't include the 20K directory).
 What's happened to the extra 200K?"
 Well the answer Fto this isn't entirely
 straight forward, but this space is
-
 mostly taken. up as gaps between
 sectors and as information about each
 sector helping to organise the data on
@@ -1738,9 +1688,6 @@ file is totally irrelevant and is only
 used when displaying a catalogue.
 
 software knows when it has finished
-
-19
-
 loading a file by storing the length
 and decreasing it until it reaches
 ZETO.
@@ -1759,9 +1706,7 @@ Discovery drive or BBC disc systems.
 They saved programs ?to the biggest
 available continuous ‘space and if
 there was no space big enough for the
-
-_whole file then you had to find a new
-
+whole file then you had to find a new
 disc to save the program on, and then
 load a special program to Compress the
 files together on the original disc
@@ -1898,9 +1843,7 @@ snapshot data (displacement 220 in the
 directory entry) is moved to 16362.
 
 There is one more routine you do need
-
-to know about, and that is the one to '
-
+to know about, and that is the one to
 change drives:
 
 1794. This routine takes a value from
@@ -1924,49 +1867,17 @@ bytes are not included in the file
 length so you must be careful not to
 treat them as part of the file.
 
-That ' s all for now . Try
-experimenting with these routines. for
-example try writing a program to load
-just the screen picture of snapshot
-files it's something you should
-easily be able to do by now. You're
-not saving any bytes on disc so you
-shouldn't lose or corrupt any files,
-but when your run the program, write
-protect the disc just in case.
+That's all for now. Try experimenting with these routines. for example
+try writing a program to load just the screen picture of snapshot
+files it's something you should easily be able to do by now. You're
+not saving any bytes on disc so you shouldn't lose or corrupt any
+files, but when your run the program, write protect the disc just in
+case.
 
-Before using any of these routines,
-you will want to page in the PLUS D.
-The simple way of doing this is to use
-the machine code instruction: IN
-A,(231) and to page out: OUT (23l),A
+Before using any of these routines, you will want to page in the PLUS
+D.  The simple way of doing this is to use the machine code
+instruction: `IN A,(231)` and to page out: `OUT (231),A`.
 
-I'll be back soon either with details
-of my new D03, or with a routine to
-help you hack those snapshots. Until
-then happy DOS1ng.
-
-Teachers Pet
-60 ltuarc.
-
- 
-
-We at Teachers Pd Software have
-sonuethilw in our range of nroancmns
-for every child of Primary schooc
-dye. '
-
-‘ Teunlnn Pet Snftwon have prayrams
-on a gmat variety of subjects
-written only for the Spectrum.
-
-Why not drop us a tiny and we'll
-send you details of what‘s available.
-
-Mention FORMAT when you order.
-and for every three programs you
-choose, you can select a fourth from
-our (list. FREE OF CRANE
-
-21
+I'll be back soon either with details of my new DOS, or with a routine
+to help you hack those snapshots. Until then happy DOSing.
 
