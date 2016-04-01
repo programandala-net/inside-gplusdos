@@ -1,0 +1,1972 @@
+||'|S| [IE Eli. 
+
+By: Stephen Herr.
+
+This sees the start of what will hopefully become a regular series
+all about G+DOS, how it works,‘what it contains and how you can use
+parts of it in your own programs.
+
+’ The series will probably be the most helpful to PLUS D éwners who;
+
+know at least a bit about machine code, but in later articles I will
+be including several example routines that less experienced readers
+should find useful. The overall aim of the series is to teach you
+the information you need to expand the G+D0s system by yourselves.
+
+Starting from very basics, the PLUS D's G+DOS (Disc Operating
+System) contains 8K of ROM followed by 8K of RAM. The ROM runs from
+
+address 0 to address 8191 and contains all the routines that control‘
+
+the disc and printer ports directly e the routines that actually
+read or write bytes of data. The RAM runs from 8192 to J6383, ie. to
+just below the start of normal RAM and the beginning of the screen
+data at 16384. It contains the necessary syntax checking for the new
+disc commands and the ROM calls needed to.execute them. The only
+exception is the POKE @ command which is held completely in ROM.
+
+The problem for us is that most of the time G+D0s just isn't
+there, it is hidden behind the normal Spectrum ROM and most of the
+time acts as if it didn't exist. Because of this, it is'known as a
+‘shadow’ ROM (except that half of it is actually shadow RAM,‘but
+donft worry about that too much). The PLUS D only appears, or
+'pages' itself in, if the normal ROM jumps to one of 4 addresses.
+when this occurs, the normal ROM temporarily disappears and‘ is
+replaced by the code held in G+DOS. \ ‘ - «
+
+The PLUS D has no networking, unlike the DISCiPLE, so there is
+still quite a lot of space left in both the ROM and the RAM.
+Obviously we cannot use the. ROM, but with over 2K of spare RAM,
+where better to put extra disc routines? This has the advantage of
+leaving the normal 48K/128K of RAM untouched and so this is where I
+will be placing routines in future articles. .
+
+The first 167 bytes of PLUS D RAM contain various system
+variables, .tables of data, and a number of addresses which are
+called from the ROM at various points. The POKE @ command affects
+these bytes directly so that POKE @O,7 means poke the first byte of
+G+DOS RAM (at 8192) with.7. The table ,on the next page gives a
+complete list of this area — some you may find useful, others not.
+For each entry, the first column gives the displacement from the
+start of G+DOS RAM, ie. the first number in a ROKE @ command. The
+second column gives the number of bytes used in that particular
+block of data, and the third gives a short desciption of its use and
+the values allowed. The last few entries are_particularly useful as
+they provide a way of directing the ROM to our own routines in RAM.
+
+21
+
+PLUS D §G+DOS[ INTERNAL SYSTEM VARIABLES
+
+DISP BYTE DESCRIPTION
+
+0
+
+16
+
+I 18
+
+ 
+
+Q9
+
+1
+
+an
+
+cncncxaa oammm
+
+data
+
+Determines how much the border flashes during disc
+operations. 0=No flashing, 7=Maximum flashing.
+
+Format capacity. of drive 1. Value is the number of
+tracks on disc (add 128 if the disc is double sided).
+Format capacity of drive 2. As above, or zero it‘ no
+drive 2 present.
+
+Drive stepping rate in milliseconds. Values 6-255.
+Unused by the PLUS D. _ '
+Number of characters on each printer line.
+
+G+DOs outputs absolute codes to the printer when this
+is zero, otherwise keywords will be expanded, etc.
+Line feed spacing in 1/72's of an inch. .
+Number of line feeds output after each carriage return
+Usually 0 or 1.
+
+character width of left hand margin.
+
+Poke this with zero if "#","E“ and "(c)" are not to be
+printed in bit image graphics mode. -
+
+Value is zero if you want to use the parallel printer
+port. Otherwise, the ZX printer can be used.
+
+Unused by the PLUS D.
+
+Jump, to the address held here for extended syntax
+checking, ie if the command currently being edited or
+run is neither a normal Spectrum command nor a G+DOS
+command then you can direct the ROM to wherever you
+want, allowing you to make up your own commands. The
+shadow ROM will NOT be paged in, and the 'A' register
+will contain the code of the first character in the
+BASIC statement.
+
+Usually holds the value 8335 (#208F). SEE DISPLACEMENT
+152.
+
+This is a string of printer control codes (up to a
+maximum of 8),used to reset the printer. The byte 128
+should follow last code if less than 8 used.
+
+Printer codes to select the default print pitch.
+Printer codes to give n[]2's of an inch line spacing.
+Printer codes to print”§ihgle density 8 bit graphics.
+Optional printer codes output when the system file is
+booted up. Usually empty.
+
+Data for bit image graphics "5".
+
+Data for bit image graphics "#".
+
+Data for bit image graphics "(C)".
+
+Printer codes to print 576 bytes of data in bit image
+graphics mode at 72 dots ‘per inch. /(Used by SAVE
+SCREENS 2). ‘W ’ ~ ’
+snvs SCREEN$ 2 colour pattern data. Each bit on screen
+is converted to a patterned block of 9 (3x3) dots on
+
+‘paper. Bits 7 of all 9 bytes of data (1 bit from each
+
+byte) correspond to the pattern for white, bits 6 to
+yellow and so on. The hits from the first 3 bytes of
+give the top row of the pattern, the next three
+give the middle row, and the last 3 bits give the last
+row of dots.
+
+This holds the address to jump to the handling routine
+for outputting the next byte to the centronics port.
+
+22
+
+101
+
+102 2
+104 20
+124 4
+128 3
+131 3
+134 3
+137 3
+140 3
+143 3
+146 3
+‘I49 3
+152 3
+155 3
+’1sa 3
+.161 >3
+163 3
+Thats all
+PLUS D pages
+directory.
+
+' Calls
+
+It is usually set to 5161 (#1429), but is changed if
+
+the present byte is a data byte follqying a "TAB/AT
+control.
+Used as a printer variable, but only hit 1 is used,
+
+when the bit is set the next carriage
+will instead be ignored.
+
+G+DOS error return address. Used by the snapshot and
+Command Code routines, the ROM will jump to this
+address rather than print an error message. NB. the
+format message “Are you sure“, and the "overwrite?"
+message are both treated as error messages.
+
+This is the snapshot catalogue entry data,
+'header' data, used when making a snapshot. The first
+byte is loaded with 5 for a 48K snapshot, 7 for a
+SCREENS and 9 for a 128K snapshot. The next 10 bytes
+give the name (usually "Snap", but can be changed).
+Unused by the PLUS D._ _
+
+G+DOS calls here before executing SAVE SCREEN$ 1.
+Usually holds a RET instruction.
+G+DOS calls here before executing SAVE SCREEN$ 2,
+Usually holds a RET instruction.
+
+Calls here before outputting a byte to the printer.
+Usually holds a RET instruction. V '
+calls here before executing a POKE @ command.
+holds a RET instruction.3 ' -
+Calls here after the system file has been loaded, but
+before the centronics port is initialised. NB. it is
+also’ called by the interrupt routine, ie. 50 times a
+second. Usually holds a RET instruction.
+
+Usually holds a RET instruction. SEE DISPLACEMENT 152.
+Calls here to load the "Auto" file. Usually holds a
+JP 10478 instruction. _
+
+here to transfer the header data of "Auto" file
+before searching the catalogue to see if‘ the‘ file
+exists.Exits if it doesn't or calls the above address
+to load the file. Usually holds JP 12171.
+
+This address is called 50 times a second by the
+interrupt routine. It . usually holds a JP 8773
+instruction where there is a short routine that picks
+up the value at 8208 (displacement 16) and jumps to
+the address it holds. This usually directs it to" 8335
+
+(displacement 143),‘ where a RET instruction returns
+execution to the ROM.
+
+Holds a jump to a routine _that prints the G+DOS
+version number after the system file has loaded.
+
+G+DOS calls here to jump to the Command Code
+routine. Usually holds a JP 8846 instruction.
+This is called continuously while waiting for
+be pressed after the snapshot button has been
+Usually holds a JP 8469 instruction.
+
+Calls here before _
+checked (excluding the POKE @ command); Usually holdg
+a JP 8359 command.
+
+return Printed
+
+or
+
+Usually
+
+a key to
+pushed.
+
+for this month. Next time I will be explaining how the
+itself in, and investigating the mysteries of the gisc
+
+23
+
+‘handling’
+
+the BASIC commands are tun/syntax’
+
+||'|S|
+
+PART 2.
+
+As I mentioned last month, there are
+four addresses at which the PLUS D
+
+pages itself in. These are 0. 8, 58
+and 102.
+
+Starting with the easiest to
+explain, location 0 is the first
+
+address that the ROM comes to when you
+switch on the computer or press the
+reset button. The PLUS D pages itself
+in at this address so that it can
+initialise the drives before jumping
+to the normal memory reset routine.
+
+Address 8 is the most important of
+the four addresses because the normal
+ROM comes here whenever an error
+occurs in BASIC. Usually the routine
+at location 8 directs the ROM to the
+current error handling routine which
+may either print a flashing question
+mark, if the line is being edited, or
+the relevant error message if the line
+is being run. However when the PLUS D
+pages in it starts looking for any ~of
+
+the extra commands that it allows,
+including the 'RUN' command used to
+boot your system file. The Command
+
+Codes and the extra streams available,
+eg. the centronics port and stream 'D'
+(the opentype files), are also
+directed to location 8.
+
+NB. One of the few bugs in G+DOS ROM
+is that INPUT #3;a$ will jump to an
+almost random address.
+
+Paging in at location 58 is,
+perhaps, a bit surprising, as it
+occurs just after the beginning of the
+normal ROM's interrupt routine. When
+interrupts are enabled, the Z80
+processor stops what it is doing every
+l/50th of a second and calls an
+interrupt routine. In the Spectrum ROM
+this routine is used to scan the
+keyboard, but with a PLUS D attached
+the routine does two extra things as
+
+DE nuns
+
+11
+
+By: Stephen Harr.
+
+well. Firstly it loads the data needed
+by the centronics port into the
+channel information area in case the
+bytes have been given their initial
+values by a system reset or a 'NEW'.
+Secondly it checks to see if the G+DOS
+RAM area contains anything at all. If
+not, it clears the RAM and gives the
+first 104 bytes their default values.
+This is why the PLUS D's red LED
+indicator flickers when you first
+switch on the power - it is the RAM
+being cleared as soon as the first
+interrupt occurs. POKE @7652,0 gives a
+quick way of resetting the whole
+system file using this method. '
+
+What. all this simply means is that
+while the normal ROM is running, the
+PLUS D is still paging itself in and
+out 50 times a second! When the system
+file is loaded, the interrupt routine
+can also be vectored into RAM, but
+because G+DOS RAM is not reset by the
+normal memory reset routine, you can
+produce some strange and sometimes
+particularly unhelpful results if you
+are not careful. Try for instance:-
+
+pox]: @1:.3,2o1: POKE e1z.4,o':
+POKE @1A5.o: POKE 9143.195
+
+The final paging address at location
+102 has two purposes. Whenever you
+press the snapshot button, all that is
+really happening is CALL 102 (a-Non
+Maskable Interrupt — NMI). Secondly,
+this address is also used as a return
+from a RST l6(#l0) call - when G+DOS
+is paged in it is still possible to
+call a subroutine in the normal ROM.
+This is done in exactly the same way
+as Interface 1 did it. The instruction
+RST 16 is used followed by two bytes
+of data which give the address to call
+(RST 16 does the same as CALL 16 but
+it is only 1 byte long). The routine
+at location 16 in G+DOS then loads
+
+ 
+
+l58h5 (#3DE5) with the value 71 (a
+capital G used to distinguish the call
+from pressing the snapshot button)
+before stacking 102 as a return
+address and making the call to the
+normal ROM. If you read that carefully
+it should all make sense.
+
+That's quite enough technical
+information for now, let us move on to
+something a bit more interesting. On
+any disc formatted by the PLUS D or
+the DISCiPLE, the first 20K (40
+sectors) are set aside to contain what
+is known as the DIRECTORY. For each
+file on disc there is one entry in the
+directory, up to a maximum of 80
+files.
+
+Access to the directory is probably
+the most important of all the disc
+routines. Before loading a file G+DOS
+must first search the directory to see
+if the file actually exists and then
+it must get the start address and
+length of the file before the file can
+be loaded. Saving is even more complex
+because as well as checking that the
+file doesn't exist, G+DOS needs to
+know which sectors are unused and can
+he saved to.
+
+The routine that does all this, and
+more, is held at 2469 (#O9A5). It is
+called with the machine code 'A‘
+register holding a certain value
+depending on what you want to doz-
+
+Aal Searches for a file that has a
+given filenumber.
+
+A=2 Prints an abbreviated catalogue
+to the current channel. Requires
+a filename.
+
+A=4 Prints a full catalogue to the
+current channel. Requires a
+filename.
+
+A=8 Searches for a file that has a
+given filename and is of a given
+file type.
+
+A=l6 Searches for a file that has a
+given filename.
+
+A=32 Produces a disc map at #3A00.
+Explained in a later article.
+
+A=6A Exits as soon as an unused
+
+directory entry is found.
+
+As you can see, most require at least
+one extra parameter.
+
+A filenumber is the number that is
+
+printed in the left-moat column when
+
+you display a full catalogue. When
+A=1, load the filenumber to 15874
+(#3102) before calling the directory
+routine.
+
+A filename is a string of up to 10
+characters which should be loaded to
+address 15878 (#3EO6) upwards. Wild-
+cards ("?" and "*") can be used but
+unless "*" is the last character, the
+filename should be followed by spaces
+to make the length up to 10.
+
+When A=8 the file type should be
+loaded to 15877 (#3E05). Its allowed
+‘values and their meanings are:-
+
+1=BASIC program.
+2=Numeric array.
+3=String array.
+4=CDDE file.
+5=48K Snapshot.
+6=File produced using microdrive hook
+codes.
+
+7=SCREEN$ file.
+8="Speciol" file.
+9=128K Snapshot.
+10=OPENTYPE file.
+12=EXECUTE file.
+
+The routine will use the current
+drive and returns with the zero flag
+set if the specified directory entry
+was found and with registers D & E
+holding the sector and track numbers
+respectively that the entry was found
+on. If the routine reached the end of
+the directory then the zero flag will
+be reset.
+
+We will use the normal RAM for the
+moment, so assemble the routine below
+to 49152 for instance and then run it
+with RANDOMISE USR 49152:-
+
+RST 8
+
+DEFB 71 ;Page in G+DOS.
+
+LD A,2 ;Use the main ROM routine
+RST 16 ;to select channel 2 -
+DEFW 5633 ;the upper screen.
+
+LD HL,15878
+
+LD (HL),"*" ;Set filename.
+
+LD A 4
+
+CALL’2469 ;Produce full catalogue.
+JP 80 ;Page out G+DOS
+
+;and return.
+
+12
+
+As you can see, its effect is the
+same as typing CAT 1 but without the
+first and last message lines. Of
+course, it is easier to do this from
+BASIC and so it is a little pointless,
+however we can also do several thin s
+that are- impossible from BASIC and
+there are several routines in G+DOS to
+help us:—
+
+2696 (#A88) Continues looking for
+further entries in the directory after
+3 CALL 2469. Note — DE must not have
+been altered.
+
+1853 (#73D) Calculates the filenumber
+of the directory entry from D & E and
+returns the result in the A register.
+
+2452 (#994) Prints the filename of the
+current entry to the current channel.
+
+6039 (#1797) Prints a
+current channel.
+
+space to the
+
+6041 (#1799) Prints the character in
+the A register.
+
+5958 (#1746) Prints as a decimal
+number the value held in HL. Preceding
+zeros (eg. 00001) are instead printed
+as the character held in the A
+register. NB. DE is altered.
+
+5956 (#1744) As above but preceding
+zeros are printed as spaces.
+
+5964 (#17&C) As 5964 but only‘ 4
+characters are printed, ie. HL must be
+
+less than 10,000.
+
+5970 (#1752) As 5958 but HL must be
+less than 1000.
+
+5976 (#1758) As 5958 but HL must be
+less than 100.
+
+Now for another practical example.
+The program below prints the
+filenumber and name of all the 48K
+snapshots on a disc:—
+
+RST 8
+
+DEFB 71
+
+LD A,2
+
+RST 16
+DEFW 5633
+LD HL,l5877
+
+;Print to the screen
+
+LD (HL).5
+INC HL
+LD (HL),"*" ;Set filename
+
+LD A.8
+
+CALL 2469
+
+LO0P:JP NZ,8O ;Exit if no entries.
+PUSH DE
+
+CALL 1853
+
+LD H,0
+
+LD L,A ;HL=filenumber
+
+LD A,32 ;Preceding zeros printed as
+
+spaces
+
+CAIL 5976 ;Print HL
+
+CALL 6039
+
+CALL 2452
+
+ID A,13
+
+CALL 6041 ;Frint a newline
+
+POP DE gkestore track and sector
+
+numbers
+
+CALL 2696 ;Search for further entries
+JR LOOP
+
+;Set type = 48K snapshot
+
+Next month I will be giving the
+details of what each directory entry
+contains, and there will be a routine
+to print an alphabetical catalogue.
+Until then, I would like to leave you
+with a few quirks of G+DOS. ‘
+
+If after typing in that really long
+program you suddenly find to your
+horror that you forgot to load your
+system file, DON'T PANIC, just type
+RUN 9999, or indeed any line number
+beyond the end of your program.
+
+The POKE @ command, unlike the
+ordinary PQKE, can actually poke a two
+byte value ie. a value between 0 and
+65536, but numbers less than 256 are
+treated as one byte values.
+
+Two quickies now. the OPEN # command
+can actually open a channel to any
+type of file not just.an OPENTYPE file
+and the CAT command can also take th
+form CAT 1;"FILENAME". ’
+
+The final piece of delectable
+information is that the
+SAVE dl"f1lename"CODE start,length
+
+command also allows an optional third
+parameter which is the address jumped
+to after the file is loaded back,
+allowing auto—running of machine code
+files.
+
+More next month.
+
+13
+
+INSIDE
+
+Part 3.
+
+This month I want to look at the
+Disc Directory, this is the same for
+both the PLUS D and its older brother
+the DISC1PLE so there is much in this
+article for DISCiPLE users..
+
+Each directory entry takes up 256
+bytes and contains all the data needed
+to load the file that it is referring
+to. The layout is as follows:—
+
+PLUS D[DISGiPLE Dﬂclﬂlﬂ LAYOUT
+
+BYTE CONTENTS
+0 File Descriptor 0-11
+(see last month)
+
+1-l0 File Name
+
+11 File Sectors Used — Low
+
+12 File Sectors Used — High
+
+13 Start of File — Track
+
+lb Start of File — Sector
+
+15-209 Sectors Used Map (195x8 hits)
+210 File Size High
+
+211 File Type (HD00)
+212 File Size Low (HDOB)
+213 s " " Mid
+
+214 - Start Address Low (HDOD)
+'215~ " " High
+
+216. Size — Vars Low (HDOF)
+217‘ " " High
+
+218‘ Auto—Run Line Low (HDII)
+219 n n u High
+
+220-241 Snapshot Register Area
+
+The bytes from 242 to 255 are not used
+by the current DOS but may be in
+future versions.
+
+In double density mode the first 40
+sectors of‘the disc (tracks 0-3) each
+hold 2 directory entries giving a
+total of 80 files. In single density
+(only available on the DISCiPLE) each
+sector holds 1 entry, hence only 40
+files per disc.
+
+Byte 210 is only used by extremely
+
+onus”
+
+By: Stephen Hhrt.
+
+long OPENTYPE files (over 64K). It is
+the most significant of 3 length bytes
+with 212 & 213.
+
+Bytes 211-219 are a copy of the UFIA
+(see Dos Command Codes — FORMAT Vol 2
+No 4.) they are also ‘stored as the
+first nine bytes of most files.
+
+Once you have found the correct
+directory entry using the directory
+access routine at 2469 (#9A5), you can
+point to the data in the entry by
+loading IX+13 with the displacement,
+IX will already be set to 15043
+(#3AC3), and then calling the routine
+at 3479 (#D97). HL will then hold the
+address of the data
+directory access routine found a BASIC
+program:-
+
+LD (IX+13),2I8
+CALL 3479
+
+LD E,(HL)
+
+INC HL
+
+LD D,(HL)
+
+DE now holds the auto—run line number
+' (or #FFFF if there isn't one). NB. If
+you want to get the file type, CALL
+3475 (#D93) is equivalent to loading
+IX+13 with zero before a CALL 3479.
+
+For those who are interested, the
+sector containing the directory entry
+will in fact have .heen loaded to
+address 15318 (#3BD6), ie. in the
+PLUS D RAM. Each sector in the
+directory holds two entries and IX+14
+hill either hold 0 or 1. This value.
+together with the value in IX+13.
+gives a two byte displacement from
+15318 so the value in IX+13 alone
+actually gives a displacement from
+either 15318 or 15574 depending on
+which entry is being examined.
+
+Back next month with a super, routine
+for the ?LUS D.
+
+13
+
+Le. if the,
+
+||'|Sl DE EHDDB
+
+Part 4.
+
+In the issue before last I looked at
+the PLUS D's disc directory. I thought
+readers would like a useful machine
+code routine which adds a new BASIC
+command CAT [#n;]d1["fileneme"] where
+anything inside square brackets is
+optional (of course the drive number
+can be 1,2 or *). Note that the form
+is CAT d1 not the existing CAT 1. The
+routine produces an alphabetical
+catalogue and works by reading each
+directory entry in turn, inserting
+room at the correct position in a
+string of previous entries, and
+transferring only the data needed to
+produce the final catalogue. Once the
+end of the directory is reached the
+whole string of entries is printed
+out. The catalogue produced is
+alphabetically (not ASCII) sorted so
+that "a" is exactly the same as "A",
+etc.
+
+The routine is designed to be held
+completely in PLUS D RAM. To get it
+there you will have to assemble the
+code to 12628 but actually store it in
+normal RAM. After assembly save it
+hy:- SAVE d1"alphaWﬂHE address,295
+
+before loading it back into shadow RAN
+with:- LOAD d1"a1ph.a"(I)DE 12628
+
+One point to note is that it was
+written to work only with the latest
+version (2a) of G+DOS.
+
+10 ;PLUS D ALPHA—CAT.
+
+20 one 12628
+
+30 ALPHA:LD B,A
+
+40 AND 223
+
+so up "D"
+
+so LD A,B
+
+70 JP NZ,9722 :#25FA
+
+;Jump back if character is not a
+;"d" or "D". ie. the command is
+;of the existing form CAT 1
+
+80 CALL 9721 ;#25F9
+
+23
+
+90
+100
+110
+120
+
+130
+1&0
+
+150
+160
+170
+
+180
+
+‘ 190
+
+200
+210
+220
+230
+240
+
+250
+
+270
+
+280
+290
+300
+
+310
+320
+330
+
+360
+350
+360
+370
+380
+
+390
+400
+410
+
+By: Stephen Hhrr.
+
+CALL 9634 ;#25A2
+CALL Z,9792 ;#2640
+CALL 12616 :#3148
+CALL 1794 ;#702
+;Check synatx — exit if editing
+RST 16
+DEFW 3503 ;#DAF
+;Clear screen
+LD A,(15875) ;#3ED3
+RST' 16
+DEFW 5633 ;#1601
+;Select channel
+LD HL,MESS1
+CALL 6027 :#17813
+
+LD A,(15873) ;#3E01
+OR 48
+
+CALL 6041 ;#1799
+
+LD HL,MESS2
+
+CALL 6027 ;#l78B
+;Print top two message lines, ‘
+;also giving the drive number
+
+LD HL,START
+LD (HL),255
+LD (LAST),HL
+
+;C1ear string. ‘LAST’ points to
+;the last byte in string
+LD A,16
+CALL 2469 ;#9A5
+JR NZ,DONE
+;Jump if directory is empty
+LOOP1:LD (IX+13),l
+CALL 3479 ;#D97
+PUSH DE
+;Save track & sector numbers
+CALL 1853 ;#73D
+
+EX AF,AF'
+LD DE,START
+LD C,l6
+
+EX DE,HL
+
+;A'=filenumher I
+;HL points to start of string
+;C=displacement between entries
+;in string ‘
+;DE points to filename in
+;current directory entry
+LDOP2:PUSH DE
+
+PUSH HL
+LO0P3:LD A,(HL)
+
+420
+A30
+440
+A50
+460
+
+A70
+480
+490
+500
+510
+520
+530
+540
+
+550
+
+560
+570
+580
+590
+
+600
+610
+
+620
+630
+640
+650
+
+660
+670
+680
+690
+700
+
+710
+720
+730
+740
+
+750
+760
+
+770
+780
+
+790
+800
+810
+820
+
+OR 32
+LD B,A
+LD A,(DE)
+OR 32
+C? B
+;Convert to lower case letters
+;and compare
+JR NZ,NOT
+INC HL
+INC DE
+JR LOOPS
+NOT :POP HL
+POP DE
+LD B,O
+JR C,FOUND
+;Jump if correct positixn found
+ADD HL,BC
+:Move to next string entry
+JR LOOPZ
+FDUND:PUSH DE
+DEC DE
+LD A,(DE)
+;Get file type from directory
+;entry 1
+PUSH HL
+EX DE,HL
+
+;DE=position in string to insert
+;new entry
+
+LD HL,(LAST)
+
+PUSH HL
+
+OR A
+
+SEC HL,DE
+;HL=number of bytes above insert
+;position
+
+EX (SP),HL
+
+LD D,H
+
+LD E,L
+
+ADD HL.BC
+
+LD (LAST),HL
+4Increase 'LAST' by 16
+
+EX DE,HL »
+
+POP BC
+
+INC BC
+
+LDDR
+:Move all entries above insert
+;position
+
+POP DE
+
+POP HL
+;DE points to inserted space
+;HL points to filename in
+:directory entry
+
+LD BC,IO
+LDIR
+
+;Move filename
+EX AF,AF'
+LD (DE),A
+INC DE
+EX AF.AF'
+
+830
+840
+
+850
+860
+
+870
+
+880
+890
+
+900-
+910
+920
+930
+
+940
+
+950
+960
+970
+980
+990
+1000
+1010
+1020
+
+1030
+1040
+1050
+
+1060
+1070
+1080
+
+. 1090
+
+2&
+
+1100
+
+1110
+1120
+1130
+1140
+1150
+
+1160
+
+1170
+1180
+
+LD (DE),A
+INC DE
+;Move filenumber & file type
+CALL DATA
+LDIR
+;Move 4 more bytes of data
+FOP DE
+;Restore track & sector numbers
+CALL 2696 ;#A88
+JR Z,LOOP1
+;Jump if there are more
+;directory entries
+
+DONE :LD HL,START
+1DOP4:LD A,(HL)
+
+INC A
+
+JP Z,1148 ;#47C
+;Jump to move on to next BASIC
+;command if reached string end
+
+CALL 2459 ;#99B
+;Print the next 10 bytes as a
+;filename
+
+CALL 6039 :#1797
+
+LD A’uPn
+
+CALL 6041 :#l799
+
+PUSH HL
+
+LD L.(H1)
+
+LD H,0
+
+LD A.32 A
+
+CALL 5970 ;#1752
+;Print HL - the filenumber
+
+POP DE
+
+INC DE
+
+LD A,(DE)
+;Get the file type
+
+INC DE
+
+PUSH AF
+
+CALL DATA
+
+EX DE,HL
+
+LDIR
+;Move data back to current
+;directory entry in PLUS D RAM
+
+CALL 6039 ;#1797
+
+CALL 6039
+
+POP AF
+
+PUSH HL
+
+CALL 5787 ;#169B
+;This call takes the file type
+;from A and prints "BAS","CDE",
+;"SNP 48K",etc. If the file is
+;CODE or BASIC the routine also
+;picks up the start & length or
+:auto~run address from the
+;current directory entry and
+;prints them
+
+FOP HL
+;HL points to next string entry
+
+JR LOOPA
+DATA :DEC A
+
+1190 LD A,2I6
+1200 JR Z,SKIP
+;Jump if file is a BASIC program
+
+1210 LD A,212
+
+1220 SKIP :LD (IX+13),A
+
+1230 CALL 3479 ;#D97
+
+1240 LD BC,4
+
+1250 RET
+
+;0n1y CODE requires 4 extra data
+;bytes — start & length, BASIC
+;requires 2 - the auto-run line
+znumher, all others require no‘
+;extra data at all.
+MESS1:DEFM " PLUS D ALPHA"
+DEFM "—CATALDGUE,"
+DEFM "DRIVE”," "+128
+MESS2:DEFM 13,"—— —-"
+DEFM "—-
+DEFM "-—--
+LAST :DEFW O
+START:EQU 13566 ;#34FE
+;Each entry in the string takes
+;up 16 bytes so with 80 files
+;on a disc, a maximum space of
+;1280 is required +1 for
+;the end marker
+
+1260
+1270
+1280
+1290
+1300
+1301
+1310
+1320
+
+  
+  
+
+---",13+12a
+
+When you have it safely in the PLUS
+D's RAM, set it working with FORE
+@1154,12628 and then try it out with
+CAT d1.
+
+In use the routine will be entered
+with IX already holding 15043 (see
+above), the optional channel (#n;) has
+been dealt with and loaded to 15875
+(defau1t=2), and the filename has been
+given a default of "*". There are a
+number of cells to routines in G+DOS,
+mostly dealing with syntax checking.
+but as I think I have run out of space
+I will explain them next month. Of
+course you don't need to type in the
+program comments (given after the
+line(s) they refer to) so I ‘have not
+given them line numbers.
+
+For those of you without an
+assembler I've just_managed to squeeze
+in a Basic poke program. Dont come to
+rely on this sortdof service, I wont
+always have the space. Besides,
+working with machine code without an
+assembler is just asking for
+headaches.
+
+10 READ add: LET add=add—8192
+20 LET 1ine=1010
+
+25
+
+30 LET s=0: FOR f=1 T0 20
+40 READ d: FORE @add,d
+50 LET s=s+d: LET add=add+1
+60 NEXT f: READ ch
+70 IF s<>AB$ ch THEN PRINT "ERROR I
+N LINE ":line: STOP
+80 LET‘1ine=1ine+10
+90 IF ch>=0 TEEN GO TO 30
+100 POKE @ll54,12628
+110 CAT dl
+1000 DATA 12628
+1010 DATA 71,230,223,25h,68,120,19h,2
+50,37,205,249,37,205,162.3
+7,204,6h,38,205,72,2925
+1020 DATA 49,205,2,7,215,175,13,58,3,
+62,21S,l,22,33,57,50,205,1
+39,23.58.1592
+1030 DATA 1,6?,246,48,205.153,23,33,8
+7,50,205,139,23,33,254,52,
+54,255,34,l21,2078
+1040 DATA 50,62,16,205,165,9,32,91,22
+1,54,13,1,205,151,13,213,2 '
+05,61,7,8,1782
+
+- 1050 DATA 17,254.52,l4,l6,235,2l3,229
+
+,126,246,32,7I,26,246,32,1
+s4.32,4,35,19.2os3
+
+1050 DATA 24,242,225,209,6,o.56,3.9,2
+A,231,213,27,26,229,235,h2
+,121,50,229,2201
+
+1070 DATA 183,237,s2,227,s4,93,9.34,1
+21,s0,235,193,3,237,1s4,2o
+9,225.1,10,o,2417
+
+1080 DATA 237,176,8,18,19,8,18,19,205
+,40,5o,237,176,2o9,2o5,136
+,10,40,165,33,2009
+
+1090 DATA 254,52,125.a0,202,124,4,205
+,155,9,205,151,23,62.80,20
+5,15a,23,229,11o,2432
+
+1100 DATA 3s,0,62.32,2o5,e2,2a,2o9,19
+,26,19,2A5,205,AO,S0,23S,2
+37,17e,2o5.151,2259
+
+1110 DATA 23,20s,151,23,241.229,2o5,1
+55,22,225,24;206,61,62,216
+,40,2.52,212,221,25s5
+
+1120 DATA 119;13,205,151.13.1,4,o,2o1
+,32,80,76,85,83,32,68,32,6
+5,75,so,1416
+
+1130 DATA 72,55.45,e7.55,sa.05,7s,79
+71.a5,69,44,6e,a2,73.86,69
+,1e6.13,1464
+
+1140 DATA_45,45,45,45,45,45,45,45,45,
+45,4S,45,b5,A5,45,45,A5,A5
+,45,a5.9o0 .
+
+1150 DATA 45,45,A5,45,45,45.45,4
+45,4s,45,141,0,0,0,0,0,o,o
+,—681
+
+5.45.
+
+Back with more PLUS D secrets soon.
+
+INSIDE
+
+PART 5.
+
+A I would like to apologise for the
+delay between this article and the
+last, but things weren't really my
+fault. If you remember, the last
+article in this series included a
+listing to produce an alphabetical
+catalogue. I hope you looked through
+the listing and could see with the
+help of the comments how the routines
+we have already looked at fitted in.
+If anyone had problems, or would like
+to ask or suggest anything at all in
+connection with the series, please let
+me know via the editor.
+
+As you will have found, the routine
+does not alter the directory, it
+simply prints the entries in
+alphabetical order leaving the normal
+catalogue commend unaffected. The
+program's biggest drawback is that
+data from the directory has to be
+stored in RAM until the final
+
+printout. We have to allow l.25K free
+for this just in case there happen to
+be 80 files on‘ the disc.
+
+Unfortunately, this uses up most of
+the available spare PLUS D RAM, and
+not many other programs are going to
+fit in at the same time. The only
+alternative is to store the data in
+the normal RAM, but then there is an
+added complication that there may not
+be enough space without overwriting 3
+BASIC program or anything else
+important.
+
+Still staying with directories for a
+
+moment, if you write disc routines in
+BASIC I'm sure you will have found
+difficulties in accessing the
+
+directory and generally have to resort
+to the LOAD @ command. My new DOS
+(coming out soon) has some powerful
+commands to help you get around this
+problem, but for the moment, the
+program below may help out. What it
+does is to set up a complete catalogue
+in the string variable a$ which you
+can then examine easily. The only
+
+17
+
+l3+|JDS
+
+By :- Stephen Wart .
+
+warning is that it won't work with
+write protected discs:-
+
+l0 OPEN #4;d1"dir_save"OUT
+20 CAT #4;l
+
+30 CLOSE #*4
+
+40 OPEN #4;dl':dir_save"IN
+50 INPUT #4;a$;a$;a$
+
+50 LET a$='"'
+
+70 INPUT #4;b$
+
+80 IF b$='"' THEN GOTO 100
+90 LET a$=»a$+h$+CH'R$ 13: GOTO 70
+100 CLOSE #*5
+
+110 ERASE dl"dir_save"
+
+It's a little bit limited and is
+best suited, for example, to comparing
+the filenames in the directory to one
+you are trying to load. A much neater
+method would be to write a machine
+code program that uses the directory
+access routine and returns the result
+together with file lengths and
+whatever else is required into a BASIC
+variable — that's sosthing for you'to
+think about if you want to, and if you
+come up with a good routine, do send
+it in.
+
+And now for something totally
+different. So far we have only looked
+at the the directory alone — as a kind
+of file in itself. Although we can
+manipulate the directory in quite a
+few ways, unless we have a particular
+file in mind all we can really do with
+the directory is print it out as some
+form of catalogue. So it's definitely
+about time that we’ started using a
+particular directory entry to access
+the actual file that it's describing.
+Put simply, how do we get at bytes of
+program data? As an introduction,
+let's have a look at the way your disc
+
+drive stores information on your
+discs.
+Disc drives are really serial
+
+devices which means that they can only
+store 1 bit of data at a time just
+
+like tapes. However, from the
+computer's point of view they are
+parallel devices — the PLUS D software
+sends whole bytes at a time (8 bits)
+to the disc controlling chip in the
+PLUS D which then does the converting
+for you. This pseudo parallel system
+does make disc drives faster than
+tapes, but the real advantage that
+discs have over tapes is that it is
+possible to access any part of the
+disc at any time, very quickly and so
+the data can be packed much tighter
+together and can be read a lot faster
+- if something goes wrong, you only
+have to wait a short while before
+having another go.
+
+Every formatted disc, for any
+computer system, is divided into
+tracks. You can imagine each track as
+a very thin ring laid out so that the
+centre of the ring is also the centre
+of the disc. Therefore the tracks
+nearer the centre of the disc are
+actually shorter than those near the
+edge, so to hold the same amount of
+data, the data has to be packed more
+densely.
+
+Each of these tracks is subdivided
+into blocks which we know as sectors.
+when you format a disc all that is
+really happening is that the software
+is telling the drive where to put
+these sectors, how long they are and
+than giving each one a number. Now to
+get to any sector on the current track
+all you have to do is tell the drive
+which sector you want by telling it
+the sector number. The drive then
+searches the current track by rotating
+the disc inside the drive at a
+constant speed of 5 revolutions per
+second until it matches your sector
+number with a sector number it finds
+on that track.
+
+The astute among you may be
+wondering what happens if you want to
+look at a sector that's on a track
+other than the current one. Well, when
+the drive is actually searching for a
+sector, the drive head (the part of
+the drive that rests just above the
+disc and receives and sends
+information) stays motionless because
+
+’if it were moving, the vibration would
+
+18
+
+reduce the reliability almost to zero.
+This means that as the disc rotates,
+the head always stays above a single
+track. Moving the head to a different
+track is a separate process and can
+even be done when there isn't a disc
+in the drive. The drive controlling
+chip can tell you which track it
+THINKS the head is above (it can get
+confused, for example when you change
+from drive 1 to 2), and the software
+then tells the head to either move in
+towards the centre of the disc (high
+track numbers) or out towards the edge
+(lower track numbers) a certain number
+of tracks to hopefully end up on the
+right track.
+
+Thi s combi nat ion 0 f f ind ing the
+correct track and than searching for
+the correct sector is entirely
+controlled by software. ‘With the
+
+PLUS D, this software is in the ROM
+and all you need do is specify the
+track number in the D register and the
+sector number of the sector you
+require to read or write to in the E
+register and then make the call to the
+ROM and it will do the rest for you.
+
+Most modern magnetic floppy discs
+can store 1 megabyte (1000 kilobytes)
+of data. This is about the upper limit
+because the tracks can’: be too narrow
+and the data can't be squashed too
+
+closely together without losing
+reliability. Hard drives have much
+greater capacities of several
+
+gigabytes but this is because the disc
+is actually part of the drive and
+can't be removed. This means that
+there is very little vibration as the
+disc rotates and so the head can be
+positioned much more accurately,
+allowing more tracks to be placed
+closer’ together.
+
+A doub1e—sided , double—density
+(DSDD), 80 track disc is a 1 megabyte
+disc, A commonquestion is "Hold on a
+minute, the PLUS D formats its discs
+to 80 tracks each side with 10 sectors
+of 0.5 kilobytes each track giving a
+capacity of 80*2*10*0.5=800K (78OK if
+you don't include the 20K directory).
+What's happened to the extra 200K?"
+Well the answer Fto this isn't entirely
+straight forward, but this space is
+
+mostly taken. up as gaps between
+sectors and as information about each
+sector helping to organise the data on
+the disc.
+
+OK, so how is all this relevant to
+us’! Well, whenever the software has
+told the drive to look for a sector, a
+special circuit in the drive is trying
+to detect a "magnetic mark" that was
+placed on the disc before each sector
+during the original formatting. The
+drive ignores everything until it
+finds one of these marks and so it's
+impossible to ever locate the middle
+of a sector, only the beginning.
+Therefore the entire sector must be
+read or written all in one go. Also
+the hardware isn't bothered whether
+the software is managing to keep up or
+not, it just keeps going regardless,
+and so it is not possible to program
+clever software effects whilst the
+disc is rotating as the CPU must
+concentrate on accessing the disc —
+even the screen border stops flashing
+when the data bytes are actually being
+moved from disc to computer or from
+computer onto disc. To give you an
+idea of their speed. at their best our
+drives can transfer 5K in a 1/5 of a
+second.
+
+It doesn't matter if you do not
+understand everything, but some of the
+things mentioned above will certainly
+come in useful and it might help you
+to understand why things sometimes can
+go wrong!
+
+I'm sure you all know by now that
+with the MG!‘ systems, all the sectors
+are a fixed length of 512 bytes or
+0.5K..As I've mentioned, the‘ sectors
+are all numbered, and the logical
+order of sectors on a PLUS D disc is:~
+
+Track 0:Sectors 1,2,3,4;5,6,7,s,9,1o
+Track l:Sectors 1,2,.....,l0
+
+and so on up to how ever many tracks
+(less one) there are on side 1. e.g
+
+Track 79:Sectors 1.2,. ... .10
+If the disc has 3 second side (and
+
+providing your drive has two heads)
+then the next sectors ‘are Track 128:
+
+Sectors 1.2,....,l0 etc.
+
+Track 79 is nearest the centre of
+the disc, and track 128 is right at
+the edge and because the two drive
+heads usually move together, when you
+want to read track 128 after track 79.
+the heads have to move the full
+distance across the disc which causes
+quite a delay compared to normal disc
+use try it out’ using the LOAD @
+command.
+
+The directory is stored from track
+0,sector 1 to track 3, sector‘ 10
+inclusive. Track 4, sector 1 onwards
+contain the actual program data. On
+any sector that is used by a file, the
+last two bytes of the sector give the
+track and sector numbers (in that
+order) of the next sector in that
+file. A file sector therefore contains
+510 bytes of file data followed by 2
+bytes of disc data which is why a 1K
+length program takes up 3 sectors
+instead of 2. when you reach the last
+file sector, the 2 disc data bytes are
+both zero.
+
+The process of loading a file can be
+summarized as follows:—
+
+(1) Find the correct directory entry.
+(2) Get the length of the file and the
+first track and sector numbers
+from the directory entry as well
+as any other relevant information
+needed (such as auto—run line
+number).
+
+Load the first sector of program
+data, transfer the data to where
+it is required and get the next
+track and sector numbers by
+reading the last two bytes of this
+sector. , ~
+Load the next sector and repeat
+until the whole file has been
+loaded.
+
+(3)
+
+(4)
+
+The number of sectors used by the
+file is totally irrelevant and is only
+used when displaying a catalogue.
+
+software knows when it has finished
+
+19
+
+loading a file by storing the length
+and decreasing it until it reaches
+ZETO.
+
+This method. whereby every sector
+
+The"
+
+gives the "disc address" of the next
+sector, means that any unused sectors
+near the start of as fairly full disc
+can get used up rather than leaving
+odd sectors here and there all over
+the disc which was the case with the
+Discovery drive or BBC disc systems.
+They saved programs ?to the biggest
+available continuous ‘space and if
+there was no space big enough for the
+
+_whole file then you had to find a new
+
+disc to save the program on, and then
+load a special program to Compress the
+files together on the original disc
+and free the spare sectors. But of
+course the disadvantage with all disc
+systems is that a file may end on the
+first byte of a ,sector leaving the
+rest of the sector unusable.
+
+All this may sound complex, but from
+a software point of view it is
+actually reasonably easy to do and
+from our point of view it is extremely
+easy as we have a number of PLUS D ROM
+routines to help us. Bear in mind that
+my new DOS does include a new EPROM
+and so the addresses given below and
+in my previous articles will be
+different when you have installed the
+new DOS.
+
+Before using the first three
+routines below, the machine code IX
+register should be set to 15043
+(#3AC3). The‘ significance of this is
+that it tells the PLUS D ROM where
+various pointers and flags are stored
+(the only exception to this rule is
+when you are using an opentype disc
+stream from machine code so you should
+avoid these files for the moment). If
+the directory access routine was used
+previously you needn't worry about
+setting IX as it will have been done
+for you.
+
+1484. The routine at this address
+loads the sector specified by the DE
+register to address 15318 (#3BD6).
+Before calling this routine, set D to
+the track number (0—79=side 1.
+128—ZO7=side 2) and E to the sector
+number (1-10) of the sector you want
+to load. The routine will ’ load any
+
+sector from disc including unused
+sectors and sectors in the directory.
+Intially the bytes at (Uh-13) and
+
+(IX+14), (addresses 15056 and 15057)
+will be set to zero, but as when
+reading a directory entry, you can
+point to any byte in the sector by
+setting them to the displacement from
+the start of the sector and then
+calling 3479 to set HL to the required
+position in the sector (IX+l4 holds
+the most significant byte and since
+the sector is only 512 bytes long, it
+can only hold 0 or 1) - SEE PREVIOUS
+ARTICLE. If you just want HL to point
+to the start of the sector without
+altering the contents of (IX+l3) &
+(IX+l4), CALL 3462 will do the job for
+you.
+
+1919. Once a file sector has been
+loaded into the PLUS D RAM using the
+above routine, this routine can be
+used to get an individual byte from
+that sector. It returns with the A
+register holding the value of the next
+byte in the file and it uses (IX+l3) &
+(IX+llo) to step through the sector, so
+if you alter their values while using
+this routine you may end up reading
+part of the file twice or missing out
+part of the file. If the end of a
+sector is reached, this routine
+automatically reads the last two bytes
+and loads the next sector for you so
+you could load the entire file byte by
+byte simply by repeatedly calling this
+routine. but there is a better method:
+
+1950. Again, the first sector in the
+file must have been loaded, but this
+routine will load the next 'BE' bytes
+from the file to address '1-EL.‘ in RAM
+(can either be the normal or PLUS D
+RAM). If after DE bytes the end of the
+file still hasn't been reached, you
+can still use this
+the one above to load the remaining
+bytes.
+
+The following three routines do not
+require IX to be set to 15043.
+
+1224!». This routine is in fact the
+LOAD @ command and is included for
+completeness. but really you are
+better off using the other routines
+given above and below. It is entered
+with IX holding the address to load
+the sector to, 'A' holding the drive
+number and 'D' 8: 'E' holding the track
+
+2-O
+
+routine again _or I
+
+and sector numbers respectively.
+
+3032. This routine is entered with
+address 1587!» holding a file-number.
+The routine then uses the directory
+access routine to find that file
+before using the routine at 148!» to
+load the first sector in that file.
+
+3068. This routine is similar to the
+one above, but instead finds a file
+with a specified filename (held at
+address 15878 as usual) before loading
+the first sector.
+
+These last two routines will load the
+first sector of any kind of file. The
+first routine roughly corresponds to
+the LOAD pl command and the second to
+LOAD d*"ﬁ1ename". In both cases any
+snapshot data (displacement 220 in the
+directory entry) is moved to 16362.
+
+There is one more routine you do need
+
+to know about, and that is the one to '
+
+change drives:
+
+1794. This routine takes a value from
+address 15873 (must be 1 or 2) and
+then selects that drive to be used in
+all following disc operations. IX must
+equal 150/03. Alternatively, you can
+place the drive number in the ‘A’
+register and call 1797.
+
+The only thing I haven't yet
+mentioned is that the first 9 bytes of
+BASIC, CODE, SCREEN'$ and array files
+contain the same disc header as at
+displacement 211 in the directory
+entries, so instead of getting the
+file's start address and length from
+the directory entry, you could get
+them from the file itself. These 9
+bytes are not included in the file
+length so you must be careful not to
+treat them as part of the file.
+
+That ' s all for now . Try
+experimenting with these routines. for
+example try writing a program to load
+just the screen picture of snapshot
+files it's something you should
+easily be able to do by now. You're
+not saving any bytes on disc so you
+shouldn't lose or corrupt any files,
+but when your run the program, write
+protect the disc just in case.
+
+Before using any of these routines,
+you will want to page in the PLUS D.
+The simple way of doing this is to use
+the machine code instruction: IN
+A,(231) and to page out: OUT (23l),A
+
+I'll be back soon either with details
+of my new D03, or with a routine to
+help you hack those snapshots. Until
+then happy DOS1ng.
+
+Teachers Pet
+60 ltuarc.
+
+ 
+
+We at Teachers Pd Software have
+sonuethilw in our range of nroancmns
+for every child of Primary schooc
+dye. '
+
+‘ Teunlnn Pet Snftwon have prayrams
+on a gmat variety of subjects
+written only for the Spectrum.
+
+Why not drop us a tiny and we'll
+send you details of what‘s available.
+
+Mention FORMAT when you order.
+and for every three programs you
+choose, you can select a fourth from
+our (list. FREE OF CRANE
+
+21
+

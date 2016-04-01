@@ -1,0 +1,22 @@
+= Inside G+DOS _restored_
+:author: Marcos Cruz
+:revdate: 2016-04-01
+
+_Inside G+DOS_ is the title of an article series written by Stephen
+Warr for the Format magazine.
+
+G+DOS is the disk operating system of the ZX Spectrum's Plus D
+interface.
+
+By the time Stephen Warr wrote these articles he was writing also
+Uni-DOS, an improved version of G+DOS for Plus D and DISCiPLE.
+
+The goal of this project is to restore the original texts from the
+scanned issues of the magazine, which can be downloaded from
+http://worldofspectrum.org[World of Spectrum], and convert them to
+http://asciidoctor.org[Asciidoctor] format, in order to make them
+easier to study.
+
+== History
+
+2016-04-01: First OCR.
