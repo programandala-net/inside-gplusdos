@@ -1,22 +1,47 @@
 = Inside G+DOS _restored_
 :author: Marcos Cruz
-:revdate: 2016-04-01
+:revdate: 2016-04-11
+
+== Description
 
 _Inside G+DOS_ is the title of an article series written by Stephen
-Warr for the Format magazine.
+Warr for the _Format_ magazine. It was published in 5 parts, from
+Volume 2 Number 8 (1989-04) to Volume 3 Number 8 (1990-04).
 
 G+DOS is the disk operating system of the ZX Spectrum's Plus D
-interface.
+interface, by MGT.
 
-By the time Stephen Warr wrote these articles he was writing also
-Uni-DOS, an improved version of G+DOS for Plus D and DISCiPLE.
+By the time Stephen Warr wrote these articles he was developing
+Uni-DOS, an improved version of G+DOS for Plus D and DISCiPLE (the
+older brother of the Plus D, also by MGT).
 
-The goal of this project is to restore the original texts from the
-scanned issues of the magazine, which can be downloaded from
-http://worldofspectrum.org[World of Spectrum], and convert them to
-http://asciidoctor.org[Asciidoctor] format, in order to make them
-easier to study.
+== Motivation and goal
+
+I found this article series in 2016, while searching the _Format_
+magazine (which can be found in JPEG and PDF formats in the archive of
+http://worldspectrum.org[World of Spectrum]) for detailed information
+on G+DOS, during the development of
+http://programandala.net/en.program.solo_forth.html[Solo Forth], and I
+find it very useful.
+
+In order to make the original articles easier to read and study, and
+also to preserve them for the future, I started converting the
+original scanned pages into an Asciidoctor document, which can be
+automatically converted to any other modern format.
+
+== Tools used
+
+- pdfimages and pdftoppm (from
+  http://poppler.freedesktop.org[poppler-utils])
+- http://code.google.com/p/tesseract-orc[tesseract]
+- http://vim.org[Vim]
+- http://asciidoctor.org[Asciidoctor]
+
+All of them running on http://raspbian.org[Raspbian] in a
+http://raspberrypi.org[Raspberry Pi 2].
 
 == History
 
-2016-04-01: First OCR.
+- 2016-03-01: Prepared the images.
+- 2016-04-01: First OCR.
+- 2016-04-11: Part 1 edited and finished.

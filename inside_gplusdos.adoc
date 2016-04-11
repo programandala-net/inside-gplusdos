@@ -1,43 +1,63 @@
 = Inside G+DOS
 :author: Stephen Warr
-:revdate: 2016-04-01
+//:revdate: 2016-04-11
+
+// Last modified 201604111153
+
+== About this document
+
+This series of articles, titled _Inside G+DOS_, was written by Stephen
+Warr. It consists of 5 parts, and it was published in the _Format_
+magazine as follows:
+
+|===
+| Part | _Format_ issue | Date
+
+| 1    | Vol 2 — No 8   | 1989-04
+| 2    | Vol 2 — No 9   | 1989-05
+| 3    | Vol 2 — No 10  | 1989-06
+| 4    | Vol 2 — No 12  | 1989-08
+| 5    | Vol 3 — No 8   | 1990-04
+|===
+
+This document was created from the scanned pages by Marcos Cruz
+(programandala.net), in 2016. See the README.adoc file for more
+details.
 
 == Part 1
 
 This sees the start of what will hopefully become a regular series
-all about G+DOS, how it works,‘what it contains and how you can use
+all about G+DOS, how it works, what it contains and how you can use
 parts of it in your own programs.
 
 The series will probably be the most helpful to PLUS D owners who
 know at least a bit about machine code, but in later articles I will
 be including several example routines that less experienced readers
 should find useful. The overall aim of the series is to teach you
-the information you need to expand the G+D0s system by yourselves.
+the information you need to expand the G+DOS system by yourselves.
 
 Starting from very basics, the PLUS D's G+DOS (Disc Operating
 System) contains 8K of ROM followed by 8K of RAM. The ROM runs from
-
-address 0 to address 8191 and contains all the routines that control‘
-
-the disc and printer ports directly e the routines that actually
-read or write bytes of data. The RAM runs from 8192 to J6383, ie. to
+address 0 to address 8191 and contains all the routines that control
+the disc and printer ports directly — the routines that actually
+read or write bytes of data. The RAM runs from 8192 to 16383, ie. to
 just below the start of normal RAM and the beginning of the screen
 data at 16384. It contains the necessary syntax checking for the new
-disc commands and the ROM calls needed to.execute them. The only
-exception is the POKE @ command which is held completely in ROM.
+disc commands and the ROM calls needed to execute them. The only
+exception is the `POKE @` command which is held completely in ROM.
 
 The problem for us is that most of the time G+DOS just isn't
 there, it is hidden behind the normal Spectrum ROM and most of the
-time acts as if it didn't exist. Because of this, it is'known as a
-‘shadow’ ROM (except that half of it is actually shadow RAM,‘but
+time acts as if it didn't exist. Because of this, it is known as a
+‘shadow’ ROM (except that half of it is actually shadow RAM, but
 don't worry about that too much). The PLUS D only appears, or
 ‘pages’ itself in, if the normal ROM jumps to one of 4 addresses.
-when this occurs, the normal ROM temporarily disappears and is
+When this occurs, the normal ROM temporarily disappears and is
 replaced by the code held in G+DOS.
 
 The PLUS D has no networking, unlike the DISCiPLE, so there is
 still quite a lot of space left in both the ROM and the RAM.
-Obviously we cannot use the. ROM, but with over 2K of spare RAM,
+Obviously we cannot use the ROM, but with over 2K of spare RAM,
 where better to put extra disc routines? This has the advantage of
 leaving the normal 48K/128K of RAM untouched and so this is where I
 will be placing routines in future articles. .
@@ -52,213 +72,232 @@ For each entry, the first column gives the displacement from the
 start of G+DOS RAM, ie. the first number in a `POKE @` command. The
 second column gives the number of bytes used in that particular
 block of data, and the third gives a short desciption of its use and
-the values allowed. The last few entries are_particularly useful as
+the values allowed. The last few entries are particularly useful as
 they provide a way of directing the ROM to our own routines in RAM.
 
-PLUS D G+DOS INTERNAL SYSTEM VARIABLES
+=== PLUS D G+DOS INTERNAL SYSTEM VARIABLES
 
-DISP BYTE DESCRIPTION
+[cols="1,1,10"]
+|===
+| DISP | BYTE | DESCRIPTION
 
-0
+| 0 | 1
 
-16
-
-I 18
-
- 
-
-Q9
-
-1
-
-an
-
-cncncxaa oammm
-
-data
-
-Determines how much the border flashes during disc
+| Determines how much the border flashes during disc
 operations. 0=No flashing, 7=Maximum flashing.
 
-Format capacity. of drive 1. Value is the number of
+| 1 | 1
+
+| Format capacity. of drive 1. Value is the number of
 tracks on disc (add 128 if the disc is double sided).
-Format capacity of drive 2. As above, or zero it‘ no
+
+| 2 | 1
+
+| Format capacity of drive 2. As above, or zero if no
 drive 2 present.
 
-Drive stepping rate in milliseconds. Values 6-255.
-Unused by the PLUS D. _ '
-Number of characters on each printer line.
+| 3 | 1 | Drive stepping rate in milliseconds. Values 6-255.
 
-G+DOS outputs absolute codes to the printer when this
+| 4 | 1 | Unused by the PLUS D.
+
+| 5 | 1 | Number of characters on each printer line.
+
+| 6 | 1
+
+| G+DOS outputs absolute codes to the printer when this
 is zero, otherwise keywords will be expanded, etc.
-Line feed spacing in 1/72's of an inch. .
-Number of line feeds output after each carriage return
+
+| 7 | 1 | Line feed spacing in 1/72's of an inch.
+
+| 8 | 1 
+
+| Number of line feeds output after each carriage return.
 Usually 0 or 1.
 
-character width of left hand margin.
+| 9 | 1 | Character width of left hand margin.
 
-Poke this with zero if "#","E“ and "(c)" are not to be
-printed in bit image graphics mode. -
+| 10 | 1
 
-Value is zero if you want to use the parallel printer
+| Poke this with zero if  “#”, “GBP” and “(c)” are not to be
+printed in bit image graphics mode.
+// XXX TODO -- GPB --> pound sign
+// XXX TODO -- (c) --> copyright
+
+| 11 | 1
+
+| Value is zero if you want to use the parallel printer
 port. Otherwise, the ZX printer can be used.
 
-Unused by the PLUS D.
+| 12 | 2 | Unused by the PLUS D.
 
-Jump, to the address held here for extended syntax
+| 14 | 2
+
+| Jump to the address held here for extended syntax
 checking, ie if the command currently being edited or
 run is neither a normal Spectrum command nor a G+DOS
 command then you can direct the ROM to wherever you
 want, allowing you to make up your own commands. The
-shadow ROM will NOT be paged in, and the 'A' register
+shadow ROM will NOT be paged in, and the ‘A’ register
 will contain the code of the first character in the
 BASIC statement.
 
-Usually holds the value 8335 (#208F). SEE DISPLACEMENT
-152.
+| 16 | 2
+| Usually holds the value 8335 (#208F). SEE DISPLACEMENT 152.
+// XXX TODO -- link to disp. 152
 
-This is a string of printer control codes (up to a
-maximum of 8),used to reset the printer. The byte 128
+| 18 | 8
+
+| This is a string of printer control codes (up to a
+maximum of 8), used to reset the printer. The byte 128
 should follow last code if less than 8 used.
 
-Printer codes to select the default print pitch.
-Printer codes to give n[]2's of an inch line spacing.
-Printer codes to print”§ihgle density 8 bit graphics.
-Optional printer codes output when the system file is
+| 26 | 8 | Printer codes to select the default print pitch.
+| 34 | 8 | Printer codes to give n/72's of an inch line spacing.
+| 42 | 8 | Printer codes to print single density 8 bit graphics.
+
+| 50 | 8
+
+| Optional printer codes output when the system file is
 booted up. Usually empty.
 
-Data for bit image graphics "5".
+| 58 | 8 | Data for bit image graphics “GPB”.
+// XXX TODO -- GPB --> pound sign
 
-Data for bit image graphics "#".
+| 66 | 8 | Data for bit image graphics “#”.
 
-Data for bit image graphics "(C)".
+| 74 | 8 | Data for bit image graphics “(c)”.
+// XXX TODO -- (c) --> copyright
 
-Printer codes to print 576 bytes of data in bit image
-graphics mode at 72 dots ‘per inch. /(Used by SAVE
-SCREENS 2). ‘W ’ ~ ’
-snvs SCREEN$ 2 colour pattern data. Each bit on screen
+| 82 | 8
+
+| Printer codes to print 576 bytes of data in bit image
+graphics mode at 72 dots per inch. (Used by `SAVE
+SCREENS 2`).
+
+| 90 | 9
+
+| `SAVE SCREEN$ 2` colour pattern data. Each bit on screen
 is converted to a patterned block of 9 (3x3) dots on
-
-‘paper. Bits 7 of all 9 bytes of data (1 bit from each
-
+paper. Bits 7 of all 9 bytes of data (1 bit from each
 byte) correspond to the pattern for white, bits 6 to
-yellow and so on. The hits from the first 3 bytes of
+yellow and so on. The bits from the first 3 bytes of
 give the top row of the pattern, the next three
 give the middle row, and the last 3 bits give the last
 row of dots.
 
-This holds the address to jump to the handling routine
+| 99 | 2
+
+| This holds the address to jump to the handling routine
 for outputting the next byte to the centronics port.
-
-22
-
-101
-
-102 2
-104 20
-124 4
-128 3
-131 3
-134 3
-137 3
-140 3
-143 3
-146 3
-‘I49 3
-152 3
-155 3
-’1sa 3
-.161 >3
-163 3
-Thats all
-PLUS D pages
-directory.
-
-' Calls
-
 It is usually set to 5161 (#1429), but is changed if
-
-the present byte is a data byte follqying a "TAB/AT
+the present byte is a data byte follqying a TAB/AT
 control.
-Used as a printer variable, but only hit 1 is used,
 
-when the bit is set the next carriage
+| 101 | 1
+
+| Used as a printer variable, but only bit 1 is used.
+When the bit is set the next carriage
 will instead be ignored.
 
-G+DOS error return address. Used by the snapshot and
+| 102 | 2
+
+| G+DOS error return address. Used by the snapshot and
 Command Code routines, the ROM will jump to this
 address rather than print an error message. NB. the
-format message “Are you sure“, and the "overwrite?"
+format message “Are you sure”, and the “overwrite?”
 message are both treated as error messages.
 
-This is the snapshot catalogue entry data,
-'header' data, used when making a snapshot. The first
+| 104 | 20 
+
+| This is the snapshot catalogue entry data, or
+‘header’ data, used when making a snapshot. The first
 byte is loaded with 5 for a 48K snapshot, 7 for a
-SCREENS and 9 for a 128K snapshot. The next 10 bytes
+SCREEN$ and 9 for a 128K snapshot. The next 10 bytes
 give the name (usually "Snap", but can be changed).
-Unused by the PLUS D._ _
 
-G+DOS calls here before executing SAVE SCREEN$ 1.
-Usually holds a RET instruction.
-G+DOS calls here before executing SAVE SCREEN$ 2,
-Usually holds a RET instruction.
+| 124 | 4 | Unused by the PLUS D.
 
-Calls here before outputting a byte to the printer.
-Usually holds a RET instruction. V '
-calls here before executing a POKE @ command.
-holds a RET instruction.3 ' -
-Calls here after the system file has been loaded, but
+| 128 | 3 
+
+| G+DOS calls here before executing `SAVE SCREEN$ 1`.
+Usually holds a `RET` instruction.
+
+| 131 | 3
+
+| G+DOS calls here before executing `SAVE SCREEN$ 2`.
+Usually holds a `RET` instruction.
+
+| 134 | 3
+
+| Calls here before outputting a byte to the printer.
+Usually holds a `RET` instruction.
+
+| 137 | 3
+
+| Calls here before executing a `POKE @` command. Usually
+holds a `RET` instruction.
+
+| 140 | 3
+
+| Calls here after the system file has been loaded, but
 before the centronics port is initialised. NB. it is
-also’ called by the interrupt routine, ie. 50 times a
-second. Usually holds a RET instruction.
+also called by the interrupt routine, ie. 50 times a
+second. Usually holds a `RET` instruction.
 
-Usually holds a RET instruction. SEE DISPLACEMENT 152.
-Calls here to load the "Auto" file. Usually holds a
-JP 10478 instruction. _
+| 143 | 3
 
-here to transfer the header data of "Auto" file
-before searching the catalogue to see if‘ the‘ file
-exists.Exits if it doesn't or calls the above address
-to load the file. Usually holds JP 12171.
+| Usually holds a `RET` instruction. SEE DISPLACEMENT 152.
+// XXX TODO -- link to displacement 152
 
-This address is called 50 times a second by the
-interrupt routine. It . usually holds a JP 8773
+| 146 | 3
+
+| Calls here to load the “Auto” file. Usually holds a
+`JP 10478` instruction.
+
+| 149 | 3
+
+| Calls here to transfer the header data of “Auto” file
+before searching the catalogue to see if the file
+exists. Exits if it doesn't or calls the above address
+to load the file. Usually holds `JP 12171`.
+
+| 152 | 3
+
+| This address is called 50 times a second by the
+interrupt routine. It usually holds a `JP 8773`
 instruction where there is a short routine that picks
 up the value at 8208 (displacement 16) and jumps to
-the address it holds. This usually directs it to" 8335
-
-(displacement 143),‘ where a RET instruction returns
+the address it holds. This usually directs it to 8335
+(displacement 143), where a `RET` instruction returns
 execution to the ROM.
 
-Holds a jump to a routine _that prints the G+DOS
+| 155 | 3
+
+| Holds a jump to a routine that prints the G+DOS
 version number after the system file has loaded.
 
-G+DOS calls here to jump to the Command Code
-routine. Usually holds a JP 8846 instruction.
-This is called continuously while waiting for
+| 158 | 3
+
+| G+DOS calls here to jump to the Command Code handling
+routine. Usually holds a `JP 8846` instruction.
+
+| 161 | 3
+
+| This is called continuously while waiting for
 be pressed after the snapshot button has been
-Usually holds a JP 8469 instruction.
+Usually holds a `JP 8469` instruction.
 
-Calls here before _
-checked (excluding the POKE @ command); Usually holdg
-a JP 8359 command.
+| 164 | 3
 
-return Printed
+| Calls here before the BASIC commands are run/syntax
+checked (excluding the `POKE @` command); Usually holds
+a `JP 8359` command.
 
-or
-
-Usually
-
-a key to
-pushed.
-
-
-‘handling’
-
-the BASIC commands are tun/syntax’
+|===
 
 That's all for this month. Next time I will be explaining how the
-itself in, and investigating the mysteries of the disc directory.
+PLUS D pages itself in, and investigating the mysteries of the disc
+directory.
 
 == Part 2
 
@@ -288,14 +327,12 @@ may either print a flashing question
 mark, if the line is being edited, or
 the relevant error message if the line
 is being run. However when the PLUS D
-pages in it starts looking for any ~of
-
+pages in it starts looking for any of
 the extra commands that it allows,
-including the 'RUN' command used to
+including the `RUN` command used to
 boot your system file. The Command
-
 Codes and the extra streams available,
-eg. the centronics port and stream 'D'
+eg. the centronics port and stream "D"
 (the opentype files), are also
 directed to location 8.
 
@@ -309,7 +346,7 @@ occurs just after the beginning of the
 normal ROM's interrupt routine. When
 interrupts are enabled, the Z80
 processor stops what it is doing every
-l/50th of a second and calls an
+1/50th of a second and calls an
 interrupt routine. In the Spectrum ROM
 this routine is used to scan the
 keyboard, but with a PLUS D attached
