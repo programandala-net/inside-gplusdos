@@ -2,7 +2,7 @@
 :author: Stephen Warr
 //:revdate: 2016-04-11
 
-// Last modified 201604111153
+// Last modified 201702140120
 
 == About this document
 
@@ -301,381 +301,238 @@ directory.
 
 == Part 2
 
-As I mentioned last month, there are
-four addresses at which the PLUS D
+As I mentioned last month, there are four addresses at which the PLUS
+D pages itself in. These are 0, 8, 58 and 102.
 
-pages itself in. These are 0. 8, 58
-and 102.
+Starting with the easiest to explain, location 0 is the first address
+that the ROM comes to when you switch on the computer or press the
+reset button. The PLUS D pages itself in at this address so that it
+can initialise the drives before jumping to the normal memory reset
+routine.
 
-Starting with the easiest to
-explain, location 0 is the first
+Address 8 is the most important of the four addresses because the
+normal ROM comes here whenever an error occurs in BASIC. Usually the
+routine at location 8 directs the ROM to the current error handling
+routine which may either print a flashing question mark, if the line
+is being edited, or the relevant error message if the line is being
+run. However when the PLUS D pages in it starts looking for any of the
+extra commands that it allows, including the `RUN` command used to
+boot your system file. The Command Codes and the extra streams
+available, eg. the centronics port and stream "D" (the opentype
+files), are also directed to location 8.
 
-address that the ROM comes to when you
-switch on the computer or press the
-reset button. The PLUS D pages itself
-in at this address so that it can
-initialise the drives before jumping
-to the normal memory reset routine.
+NB. One of the few bugs in G+DOS ROM is that INPUT #3;a$ will jump to
+an almost random address.
 
-Address 8 is the most important of
-the four addresses because the normal
-ROM comes here whenever an error
-occurs in BASIC. Usually the routine
-at location 8 directs the ROM to the
-current error handling routine which
-may either print a flashing question
-mark, if the line is being edited, or
-the relevant error message if the line
-is being run. However when the PLUS D
-pages in it starts looking for any of
-the extra commands that it allows,
-including the `RUN` command used to
-boot your system file. The Command
-Codes and the extra streams available,
-eg. the centronics port and stream "D"
-(the opentype files), are also
-directed to location 8.
+Paging in at location 58 is, perhaps, a bit surprising, as it occurs
+just after the beginning of the normal ROM's interrupt routine. When
+interrupts are enabled, the Z80 processor stops what it is doing every
+1/50th of a second and calls an interrupt routine. In the Spectrum ROM
+this routine is used to scan the keyboard, but with a PLUS D attached
+the routine does two extra things as well. Firstly it loads the data
+needed by the centronics port into the channel information area in
+case the bytes have been given their initial values by a system reset
+or a 'NEW'.  Secondly it checks to see if the G+DOS RAM area contains
+anything at all. If not, it clears the RAM and gives the first 104
+bytes their default values.  This is why the PLUS D's red LED
+indicator flickers when you first switch on the power - it is the RAM
+being cleared as soon as the first interrupt occurs. `POKE @7652,0`
+gives a quick way of resetting the whole system file using this
+method.
 
-NB. One of the few bugs in G+DOS ROM
-is that INPUT #3;a$ will jump to an
-almost random address.
-
-Paging in at location 58 is,
-perhaps, a bit surprising, as it
-occurs just after the beginning of the
-normal ROM's interrupt routine. When
-interrupts are enabled, the Z80
-processor stops what it is doing every
-1/50th of a second and calls an
-interrupt routine. In the Spectrum ROM
-this routine is used to scan the
-keyboard, but with a PLUS D attached
-the routine does two extra things as
-
-DE nuns
-
-well. Firstly it loads the data needed
-by the centronics port into the
-channel information area in case the
-bytes have been given their initial
-values by a system reset or a 'NEW'.
-Secondly it checks to see if the G+DOS
-RAM area contains anything at all. If
-not, it clears the RAM and gives the
-first 104 bytes their default values.
-This is why the PLUS D's red LED
-indicator flickers when you first
-switch on the power - it is the RAM
-being cleared as soon as the first
-interrupt occurs. POKE @7652,0 gives a
-quick way of resetting the whole
-system file using this method. '
-
-What. all this simply means is that
-while the normal ROM is running, the
-PLUS D is still paging itself in and
-out 50 times a second! When the system
-file is loaded, the interrupt routine
-can also be vectored into RAM, but
-because G+DOS RAM is not reset by the
-normal memory reset routine, you can
-produce some strange and sometimes
-particularly unhelpful results if you
-are not careful. Try for instance:
+What all this simply means is that while the normal ROM is running,
+the PLUS D is still paging itself in and out 50 times a second! When
+the system file is loaded, the interrupt routine can also be vectored
+into RAM, but because G+DOS RAM is not reset by the normal memory
+reset routine, you can produce some strange and sometimes particularly
+unhelpful results if you are not careful. Try for instance:
 
 ----
 POKE @143,201: POKE @144,0:
 POKE @145,0: POKE @143,195
 ----
 
-The final paging address at location
-102 has two purposes. Whenever you
-press the snapshot button, all that is
-really happening is CALL 102 (a-Non
-Maskable Interrupt — NMI). Secondly,
-this address is also used as a return
-from a RST l6(#l0) call - when G+DOS
-is paged in it is still possible to
-call a subroutine in the normal ROM.
-This is done in exactly the same way
-as Interface 1 did it. The instruction
-RST 16 is used followed by two bytes
-of data which give the address to call
-(RST 16 does the same as CALL 16 but
-it is only 1 byte long). The routine
-at location 16 in G+DOS then loads
+The final paging address at location 102 has two purposes. Whenever
+you press the snapshot button, all that is really happening is CALL
+102 (a-Non Maskable Interrupt — NMI). Secondly, this address is also
+used as a return from a RST 16(#10) call - when G+DOS is paged in it
+is still possible to call a subroutine in the normal ROM.  This is
+done in exactly the same way as Interface 1 did it. The instruction
+RST 16 is used followed by two bytes of data which give the address to
+call (RST 16 does the same as CALL 16 but it is only 1 byte long). The
+routine at location 16 in G+DOS then loads 15845 (#3DE5) with the
+value 71 (a capital G used to distinguish the call from pressing the
+snapshot button) before stacking 102 as a return address and making
+the call to the normal ROM. If you read that carefully it should all
+make sense.
 
- 
+That's quite enough technical information for now, let us move on to
+something a bit more interesting. On any disc formatted by the PLUS D
+or the DISCiPLE, the first 20K (40 sectors) are set aside to contain
+what is known as the DIRECTORY. For each file on disc there is one
+entry in the directory, up to a maximum of 80 files.
 
-l58h5 (#3DE5) with the value 71 (a
-capital G used to distinguish the call
-from pressing the snapshot button)
-before stacking 102 as a return
-address and making the call to the
-normal ROM. If you read that carefully
-it should all make sense.
+Access to the directory is probably the most important of all the disc
+routines. Before loading a file G+DOS must first search the directory
+to see if the file actually exists and then it must get the start
+address and length of the file before the file can be loaded. Saving
+is even more complex because as well as checking that the file doesn't
+exist, G+DOS needs to know which sectors are unused and can be saved
+to.
 
-That's quite enough technical
-information for now, let us move on to
-something a bit more interesting. On
-any disc formatted by the PLUS D or
-the DISCiPLE, the first 20K (40
-sectors) are set aside to contain what
-is known as the DIRECTORY. For each
-file on disc there is one entry in the
-directory, up to a maximum of 80
-files.
+The routine that does all this, and more, is held at 2469 (#09A5). It
+is called with the machine code 'A' register holding a certain value
+depending on what you want to do:
 
-Access to the directory is probably
-the most important of all the disc
-routines. Before loading a file G+DOS
-must first search the directory to see
-if the file actually exists and then
-it must get the start address and
-length of the file before the file can
-be loaded. Saving is even more complex
-because as well as checking that the
-file doesn't exist, G+DOS needs to
-know which sectors are unused and can
-he saved to.
+|===
+| Value | Action
 
-The routine that does all this, and
-more, is held at 2469 (#O9A5). It is
-called with the machine code 'A‘
-register holding a certain value
-depending on what you want to doz-
+| 1 | Searches for a file that has a given filenumber.
 
-Aal Searches for a file that has a
-given filenumber.
-
-A=2 Prints an abbreviated catalogue
-to the current channel. Requires
+| 2 | Prints an abbreviated catalogue to the current channel. Requires
 a filename.
 
-A=4 Prints a full catalogue to the
-current channel. Requires a
+| 4 | Prints a full catalogue to the current channel. Requires a
 filename.
 
-A=8 Searches for a file that has a
-given filename and is of a given
+| 8 | Searches for a file that has a given filename and is of a given
 file type.
 
-A=l6 Searches for a file that has a
-given filename.
+| 16 | Searches for a file that has a given filename.
 
-A=32 Produces a disc map at #3A00.
-Explained in a later article.
+| 32 | Produces a disc map at #3A00.  Explained in a later article.
 
-A=6A Exits as soon as an unused
+| 64 | Exits as soon as an unused directory entry is found.
 
-directory entry is found.
+|===
 
-As you can see, most require at least
-one extra parameter.
+// XXX TODO -- link "later article" above
 
-A filenumber is the number that is
+As you can see, most require at least one extra parameter.
 
-printed in the left-moat column when
+A filenumber is the number that is printed in the left-most column
+when you display a full catalogue. When A=1, load the filenumber to
+15874 (#3E02) before calling the directory routine.
 
-you display a full catalogue. When
-A=1, load the filenumber to 15874
-(#3102) before calling the directory
-routine.
+A filename is a string of up to 10 characters which should be loaded
+to address 15878 (#3EO6) upwards. Wild- cards ("?" and "*") can be
+used but unless "*" is the last character, the filename should be
+followed by spaces to make the length up to 10.
 
-A filename is a string of up to 10
-characters which should be loaded to
-address 15878 (#3EO6) upwards. Wild-
-cards ("?" and "*") can be used but
-unless "*" is the last character, the
-filename should be followed by spaces
-to make the length up to 10.
+When A=8 the file type should be loaded to 15877 (#3E05). Its allowed
+values and their meanings are:
 
-When A=8 the file type should be
-loaded to 15877 (#3E05). Its allowed
-‘values and their meanings are:-
+|===
+| Value | Meaning
 
-1=BASIC program.
-2=Numeric array.
-3=String array.
-4=CDDE file.
-5=48K Snapshot.
-6=File produced using microdrive hook
-codes.
+|  1    | BASIC program
+|  2    | Numeric array
+|  3    | String array
+|  4    | CDDE file
+|  5    | 48K Snapshot
+|  6    | File produced using microdrive hook codes
+|  7    | SCREEN$ file
+|  8    | "Special" file
+|  9    | 128K Snapshot
+| 10    | OPENTYPE file
+| 12    | EXECUTE file
+|===
 
-7=SCREEN$ file.
-8="Speciol" file.
-9=128K Snapshot.
-10=OPENTYPE file.
-12=EXECUTE file.
+The routine will use the current drive and returns with the zero flag
+set if the specified directory entry was found and with registers D &
+E holding the sector and track numbers respectively that the entry was
+found on. If the routine reached the end of the directory then the
+zero flag will be reset.
 
-The routine will use the current
-drive and returns with the zero flag
-set if the specified directory entry
-was found and with registers D & E
-holding the sector and track numbers
-respectively that the entry was found
-on. If the routine reached the end of
-the directory then the zero flag will
-be reset.
+We will use the normal RAM for the moment, so assemble the routine
+below to 49152 for instance and then run it with `RANDOMIZE USR
+49152`:
 
-We will use the normal RAM for the
-moment, so assemble the routine below
-to 49152 for instance and then run it
-with RANDOMISE USR 49152:-
-
+----
 RST 8
-
-DEFB 71 ;Page in G+DOS.
-
-LD A,2 ;Use the main ROM routine
-RST 16 ;to select channel 2 -
-DEFW 5633 ;the upper screen.
-
+DEFB 71        ; Page in G+DOS
+LD A,2         ; Use the main ROM routine
+RST 16         ; to select channel 2 -
+DEFW 5633      ; the upper screen
 LD HL,15878
+LD (HL),"*"    ; Set filename
+LD A,4
+CALL 2469      ; Produce full catalogue
+JP 80          ; Page out G+DOS and return
+----
 
-LD (HL),"*" ;Set filename.
+As you can see, its effect is the same as typing `CAT 1` but without
+the first and last message lines. Of course, it is easier to do this
+from BASIC and so it is a little pointless, however we can also do
+several things that are impossible from BASIC and there are several
+routines in G+DOS to help us:
 
-LD A 4
+- 2696 (#A88) Continues looking for further entries in the directory
+  after a `CALL 2469`. Note — DE must not have been altered.
+- 1853 (#73D) Calculates the filenumber of the directory entry from D
+  & E and returns the result in the A register.
+- 2452 (#994) Prints the filename of the current entry to the current
+  channel.
+- 6039 (#1797) Prints a space to the current channel.
+- 6041 (#1799) Prints the character in the A register.
+- 5958 (#1746) Prints as a decimal number the value held in HL.
+  Preceding zeros (eg. 00001) are instead printed as the character
+  held in the A register. NB. DE is altered.
+- 5956 (#1744) As above but preceding zeros are printed as spaces.
+- 5964 (#174C) As 5964 but only 4 characters are printed, ie. HL must
+  be less than 10,000.
+- 5970 (#1752) As 5958 but HL must be less than 1000.
+- 5976 (#1758) As 5958 but HL must be less than 100.
 
-CALL’2469 ;Produce full catalogue.
-JP 80 ;Page out G+DOS
+Now for another practical example.  The program below prints the
+filenumber and name of all the 48K snapshots on a disc:
 
-;and return.
+----
+  RST 8
+  DEFB 71
+  LD A,2
+  RST 16
+  DEFW 5633   ; Print to the screen
+  LD HL,15877
+  LD (HL),5   ; Set type = 48K snapshot
+  INC HL
+  LD (HL),"*" ; Set filename
+  LD A,8
+  CALL 2469
+LOOP:
+  JP NZ,8O    ; Exit if no entries
+  PUSH DE
+  CALL 1853
+  LD H,0
+  LD L,A      ; HL=filenumber
+  LD A,32     ; Preceding zeros printed as spaces
+  CALL 5976   ; Print HL
+  CALL 6039
+  CALL 2452
+  LD A,13
+  CALL 6041   ; Print a newline
+  POP DE      ; Restore track and sector numbers
+  CALL 2696   ; Search for further entries
+  JR LOOP
+----
 
-12
+Next month I will be giving the details of what each directory entry
+contains, and there will be a routine to print an alphabetical
+catalogue.  Until then, I would like to leave you with a few quirks of
+G+DOS.
 
-As you can see, its effect is the
-same as typing CAT 1 but without the
-first and last message lines. Of
-course, it is easier to do this from
-BASIC and so it is a little pointless,
-however we can also do several thin s
-that are- impossible from BASIC and
-there are several routines in G+DOS to
-help us:—
+If after typing in that really long program you suddenly find to your
+horror that you forgot to load your system file, DON'T PANIC, just
+type `RUN 9999`, or indeed any line number beyond the end of your
+program.
 
-2696 (#A88) Continues looking for
-further entries in the directory after
-3 CALL 2469. Note — DE must not have
-been altered.
+The `POKE @` command, unlike the ordinary `POKE`, can actually poke a
+two byte value ie. a value between 0 and 65536, but numbers less than
+256 are treated as one byte values.
 
-1853 (#73D) Calculates the filenumber
-of the directory entry from D & E and
-returns the result in the A register.
-
-2452 (#994) Prints the filename of the
-current entry to the current channel.
-
-6039 (#1797) Prints a
-current channel.
-
-space to the
-
-6041 (#1799) Prints the character in
-the A register.
-
-5958 (#1746) Prints as a decimal
-number the value held in HL. Preceding
-zeros (eg. 00001) are instead printed
-as the character held in the A
-register. NB. DE is altered.
-
-5956 (#1744) As above but preceding
-zeros are printed as spaces.
-
-5964 (#17&C) As 5964 but only‘ 4
-characters are printed, ie. HL must be
-
-less than 10,000.
-
-5970 (#1752) As 5958 but HL must be
-less than 1000.
-
-5976 (#1758) As 5958 but HL must be
-less than 100.
-
-Now for another practical example.
-The program below prints the
-filenumber and name of all the 48K
-snapshots on a disc:—
-
-RST 8
-
-DEFB 71
-
-LD A,2
-
-RST 16
-DEFW 5633
-LD HL,l5877
-
-;Print to the screen
-
-LD (HL).5
-INC HL
-LD (HL),"*" ;Set filename
-
-LD A.8
-
-CALL 2469
-
-LO0P:JP NZ,8O ;Exit if no entries.
-PUSH DE
-
-CALL 1853
-
-LD H,0
-
-LD L,A ;HL=filenumber
-
-LD A,32 ;Preceding zeros printed as
-
-spaces
-
-CAIL 5976 ;Print HL
-
-CALL 6039
-
-CALL 2452
-
-ID A,13
-
-CALL 6041 ;Frint a newline
-
-POP DE gkestore track and sector
-
-numbers
-
-CALL 2696 ;Search for further entries
-JR LOOP
-
-;Set type = 48K snapshot
-
-Next month I will be giving the
-details of what each directory entry
-contains, and there will be a routine
-to print an alphabetical catalogue.
-Until then, I would like to leave you
-with a few quirks of G+DOS. ‘
-
-If after typing in that really long
-program you suddenly find to your
-horror that you forgot to load your
-system file, DON'T PANIC, just type
-RUN 9999, or indeed any line number
-beyond the end of your program.
-
-The POKE @ command, unlike the
-ordinary PQKE, can actually poke a two
-byte value ie. a value between 0 and
-65536, but numbers less than 256 are
-treated as one byte values.
-
-Two quickies now. the OPEN # command
-can actually open a channel to any
-type of file not just.an OPENTYPE file
-and the CAT command can also take th
-form CAT 1;"FILENAME". ’
+Two quickies now, the `OPEN #` command can actually open a channel to
+any type of file not just.an OPENTYPE file and the `CAT` command can
+also take the form `CAT 1;"FILENAME"`.
 
 The final piece of delectable information is that the `SAVE
 d1"f1lename"CODE start,length` command also allows an optional third
