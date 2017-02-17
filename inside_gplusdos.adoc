@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2016-04-11
+//:revdate: 2017-02-17
 
-// Last modified 201702140120
+// Last modified 201702170110
 
 == About this document
 
@@ -21,8 +21,8 @@ magazine as follows:
 |===
 
 This document was created from the scanned pages by Marcos Cruz
-(programandala.net), in 2016. See the README.adoc file for more
-details.
+(programandala.net), in 2016 and 2017. See the README.adoc file for
+more details.
 
 == Part 1
 
@@ -543,123 +543,81 @@ More next month.
 
 == Part 3
 
-This month I want to look at the
-Disc Directory, this is the same for
-both the PLUS D and its older brother
-the DISCiPLE so there is much in this
-article for DISCiPLE users.
+This month I want to look at the Disc Directory, this is the same for
+both the PLUS D and its older brother the DISCiPLE so there is much in
+this article for DISCiPLE users.
 
-Each directory entry takes up 256
-bytes and contains all the data needed
-to load the file that it is referring
-to. The layout is as follows:—
+Each directory entry takes up 256 bytes and contains all the data
+needed to load the file that it is referring to. The layout is as
+follows:
 
-PLUS D/DISCiPLE DIRECTORY LAYOUT
+[caption="PLUS D/DISCiPLE DIRECTORY LAYOUT"]
+|===
+| BYTE    | CONTENTS
 
-BYTE CONTENTS
-0 File Descriptor 0-11
-(see last month)
+| 0       | File Descriptor 0-11 (see last month)
+| 1-10    | File Name
+| 11      | File Sectors Used — Low
+| 12      | File Sectors Used — High
+| 13      | Start of File — Track
+| 14      | Start of File — Sector
+| 15-209  | Sectors Used Map (195x8 bits)
+| 210     | File Size High
+| 211     | File Type (HD00)
+| 212     | File Size Low (HD0B)
+| 213     | File Size Mid
+| 214     | Start Address Low (HD0D)
+| 215     | Start Address High
+| 216     | Size — Vars Low (HD0F)
+| 217     | Size — Vars High
+| 218     | Auto—Run Line Low (HD11)
+| 219     | Auto—Run Line Low High
+| 220-241 | Snapshot Register Area
+|===
 
-1-l0 File Name
+The bytes from 242 to 255 are not used by the current DOS but may be
+in future versions.
 
-11 File Sectors Used — Low
+In double density mode the first 40 sectors of the disc (tracks 0-3)
+each hold 2 directory entries giving a total of 80 files. In single
+density (only available on the DISCiPLE) each sector holds 1 entry,
+hence only 40 files per disc.
 
-12 File Sectors Used — High
+Byte 210 is only used by extremely long OPENTYPE files (over 64K). It
+is the most significant of 3 length bytes with 212 & 213.
 
-13 Start of File — Track
+Bytes 211-219 are a copy of the UFIA (see Dos Command Codes — FORMAT
+Vol 2 No 4.) they are also stored as the first nine bytes of most
+files.
 
-lb Start of File — Sector
+Once you have found the correct directory entry using the directory
+access routine at 2469 (#9A5), you can point to the data in the entry
+by loading IX+13 with the displacement, IX will already be set to
+15043 (#3AC3), and then calling the routine at 3479 (#D97). HL will
+then hold the address of the data — i.e. if the directory access
+routine found a BASIC program:
 
-15-209 Sectors Used Map (195x8 hits)
-210 File Size High
-
-211 File Type (HD00)
-212 File Size Low (HDOB)
-213 s " " Mid
-
-214 - Start Address Low (HDOD)
-'215~ " " High
-
-216. Size — Vars Low (HDOF)
-217‘ " " High
-
-218‘ Auto—Run Line Low (HDII)
-219 n n u High
-
-220-241 Snapshot Register Area
-
-The bytes from 242 to 255 are not used
-by the current DOS but may be in
-future versions.
-
-In double density mode the first 40
-sectors of‘the disc (tracks 0-3) each
-hold 2 directory entries giving a
-total of 80 files. In single density
-(only available on the DISCiPLE) each
-sector holds 1 entry, hence only 40
-files per disc.
-
-Byte 210 is only used by extremely
-
-onus”
-
-By: Stephen Hhrt.
-
-long OPENTYPE files (over 64K). It is
-the most significant of 3 length bytes
-with 212 & 213.
-
-Bytes 211-219 are a copy of the UFIA
-(see Dos Command Codes — FORMAT Vol 2
-No 4.) they are also ‘stored as the
-first nine bytes of most files.
-
-Once you have found the correct
-directory entry using the directory
-access routine at 2469 (#9A5), you can
-point to the data in the entry by
-loading IX+13 with the displacement,
-IX will already be set to 15043
-(#3AC3), and then calling the routine
-at 3479 (#D97). HL will then hold the
-address of the data
-directory access routine found a BASIC
-program:-
-
-LD (IX+13),2I8
+----
+LD (IX+13),218
 CALL 3479
-
 LD E,(HL)
-
 INC HL
-
 LD D,(HL)
+----
 
-DE now holds the auto—run line number
-' (or #FFFF if there isn't one). NB. If
-you want to get the file type, CALL
-3475 (#D93) is equivalent to loading
-IX+13 with zero before a CALL 3479.
+DE now holds the auto—run line number (or #FFFF if there isn't one).
+NB. If you want to get the file type, CALL 3475 (#D93) is equivalent
+to loading IX+13 with zero before a CALL 3479.
 
-For those who are interested, the
-sector containing the directory entry
-will in fact have .heen loaded to
-address 15318 (#3BD6), ie. in the
-PLUS D RAM. Each sector in the
-directory holds two entries and IX+14
-hill either hold 0 or 1. This value.
-together with the value in IX+13.
-gives a two byte displacement from
-15318 so the value in IX+13 alone
-actually gives a displacement from
-either 15318 or 15574 depending on
-which entry is being examined.
+For those who are interested, the sector containing the directory
+entry will in fact have been loaded to address 15318 (#3BD6), i.e. in
+the PLUS D RAM. Each sector in the directory holds two entries and
+IX+14 will either hold 0 or 1. This value.  together with the value in
+IX+13.  gives a two byte displacement from 15318 so the value in IX+13
+alone actually gives a displacement from either 15318 or 15574
+depending on which entry is being examined.
 
-Back next month with a super, routine
-for the ?LUS D.
-
-Le. if the,
+Back next month with a super routine for the PLUS D.
 
 == Part 4
 
