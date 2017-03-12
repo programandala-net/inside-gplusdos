@@ -2,7 +2,7 @@
 :author: Stephen Warr
 //:revdate: 2017-03-12
 
-// Last modified 201703121840
+// Last modified 201703121932
 
 == About this document
 
@@ -900,7 +900,7 @@ Back with more PLUS D secrets soon.
 
 == Part 5
 
-A I would like to apologise for the delay between this article and the
+I would like to apologise for the delay between this article and the
 last, but things weren't really my fault. If you remember, the last
 article in this series included a listing to produce an alphabetical
 catalogue. I hope you looked through the listing and could see with
@@ -909,374 +909,228 @@ fitted in.  If anyone had problems, or would like to ask or suggest
 anything at all in connection with the series, please let me know via
 the editor.
 
-As you will have found, the routine
-does not alter the directory, it
-simply prints the entries in
-alphabetical order leaving the normal
-catalogue command unaffected. The
-program's biggest drawback is that
-data from the directory has to be
-stored in RAM until the final
-printout. We have to allow 1.25K free
-for this just in case there happen to
-be 80 files on the disc.
+As you will have found, the routine does not alter the directory, it
+simply prints the entries in alphabetical order leaving the normal
+catalogue command unaffected. The program's biggest drawback is that
+data from the directory has to be stored in RAM until the final
+printout. We have to allow 1.25K free for this just in case there
+happen to be 80 files on the disc.  Unfortunately, this uses up most
+of the available spare PLUS D RAM, and not many other programs are
+going to fit in at the same time. The only alternative is to store the
+data in the normal RAM, but then there is an added complication that
+there may not be enough space without overwriting a BASIC program or
+anything else important.
 
-Unfortunately, this uses up most of
-the available spare PLUS D RAM, and
-not many other programs are going to
-fit in at the same time. The only
-alternative is to store the data in
-the normal RAM, but then there is an
-added complication that there may not
-be enough space without overwriting 3
-BASIC program or anything else
-important.
-
-Still staying with directories for a
-moment, if you write disc routines in
-BASIC I'm sure you will have found
-difficulties in accessing the
-directory and generally have to resort
-to the `LOAD @` command. My new DOS
-(coming out soon) has some powerful
-commands to help you get around this
-problem, but for the moment, the
-program below may help out. What it
-does is to set up a complete catalogue
-in the string variable a$ which you
-can then examine easily. The only
-warning is that it won't work with
-write protected discs:
+Still staying with directories for a moment, if you write disc
+routines in BASIC I'm sure you will have found difficulties in
+accessing the directory and generally have to resort to the `LOAD @`
+command. My new DOS (coming out soon) has some powerful commands to
+help you get around this problem, but for the moment, the program
+below may help out. What it does is to set up a complete catalogue in
+the string variable `a$` which you can then examine easily. The only
+warning is that it won't work with write protected discs:
 
 ----
-10 OPEN #4;d1"dir_save"OUT
-20 CAT #4;l
-30 CLOSE #*4
-40 OPEN #4;d1':dir_save"IN
-50 INPUT #4;a$;a$;a$
-50 LET a$='"'
-70 INPUT #4;b$
-80 IF b$='"' THEN GOTO 100
-90 LET a$=a$+h$+CHR$ 13: GOTO 70
-100 CLOSE #*5
+ 10 OPEN #4;d1"dir_save"OUT
+ 20 CAT #4;1
+ 30 CLOSE #*4
+ 40 OPEN #4;d1"dir_save"IN
+ 50 INPUT #4;a$;a$;a$
+ 50 LET a$=""
+ 70 INPUT #4;b$
+ 80 IF b$="" THEN GOTO 100
+ 90 LET a$=a$+b$+CHR$ 13: GOTO 70
+100 CLOSE #*4
 110 ERASE d1"dir_save"
 ----
 
-It's a little bit limited and is
-best suited, for example, to comparing
-the filenames in the directory to one
-you are trying to load. A much neater
-method would be to write a machine
-code program that uses the directory
-access routine and returns the result
-together with file lengths and
-whatever else is required into a BASIC
-variable — that's sosthing for you'to
-think about if you want to, and if you
-come up with a good routine, do send
-it in.
+It's a little bit limited and is best suited, for example, to
+comparing the filenames in the directory to one you are trying to
+load. A much neater method would be to write a machine code program
+that uses the directory access routine and returns the result together
+with file lengths and whatever else is required into a BASIC variable
+— that's something for you to think about if you want to, and if you
+come up with a good routine, do send it in.
 
-And now for something totally
-different. So far we have only looked
-at the the directory alone — as a kind
-of file in itself. Although we can
-manipulate the directory in quite a
-few ways, unless we have a particular
-file in mind all we can really do with
-the directory is print it out as some
-form of catalogue. So it's definitely
-about time that we’ started using a
-particular directory entry to access
-the actual file that it's describing.
-Put simply, how do we get at bytes of
-program data? As an introduction,
-let's have a look at the way your disc
-drive stores information on your
-discs.
-Disc drives are really serial
-devices which means that they can only
-store 1 bit of data at a time just
-like tapes. However, from the
-computer's point of view they are
-parallel devices — the PLUS D software
-sends whole bytes at a time (8 bits)
-to the disc controlling chip in the
-PLUS D which then does the converting
-for you. This pseudo parallel system
-does make disc drives faster than
-tapes, but the real advantage that
-discs have over tapes is that it is
-possible to access any part of the
-disc at any time, very quickly and so
-the data can be packed much tighter
-together and can be read a lot faster
--- if something goes wrong, you only
-have to wait a short while before
+And now for something totally different. So far we have only looked at
+the directory alone — as a kind of file in itself. Although we can
+manipulate the directory in quite a few ways, unless we have a
+particular file in mind all we can really do with the directory is
+print it out as some form of catalogue. So it's definitely about time
+that we started using a particular directory entry to access the
+actual file that it's describing.  Put simply, how do we get at bytes
+of program data? As an introduction, let's have a look at the way your
+disc drive stores information on your discs.
+
+Disc drives are really serial devices which means that they can only
+store 1 bit of data at a time just like tapes. However, from the
+computer's point of view they are parallel devices — the PLUS D
+software sends whole bytes at a time (8 bits) to the disc controlling
+chip in the PLUS D which then does the converting for you. This pseudo
+parallel system does make disc drives faster than tapes, but the real
+advantage that discs have over tapes is that it is possible to access
+any part of the disc at any time, very quickly and so the data can be
+packed much tighter together and can be read a lot faster — if
+something goes wrong, you only have to wait a short while before
 having another go.
 
-Every formatted disc, for any
-computer system, is divided into
-tracks. You can imagine each track as
-a very thin ring laid out so that the
-centre of the ring is also the centre
-of the disc. Therefore the tracks
-nearer the centre of the disc are
-actually shorter than those near the
-edge, so to hold the same amount of
-data, the data has to be packed more
-densely.
+Every formatted disc, for any computer system, is divided into tracks.
+You can imagine each track as a very thin ring laid out so that the
+centre of the ring is also the centre of the disc. Therefore the
+tracks nearer the centre of the disc are actually shorter than those
+near the edge, so to hold the same amount of data, the data has to be
+packed more densely.
 
-Each of these tracks is subdivided
-into blocks which we know as sectors.
-when you format a disc all that is
-really happening is that the software
-is telling the drive where to put
-these sectors, how long they are and
-than giving each one a number. Now to
-get to any sector on the current track
-all you have to do is tell the drive
-which sector you want by telling it
-the sector number. The drive then
-searches the current track by rotating
-the disc inside the drive at a
-constant speed of 5 revolutions per
-second until it matches your sector
-number with a sector number it finds
-on that track.
+Each of these tracks is subdivided into blocks which we know as
+sectors.  when you format a disc all that is really happening is that
+the software is telling the drive where to put these sectors, how long
+they are and then giving each one a number. Now to get to any sector
+on the current track all you have to do is tell the drive which sector
+you want by telling it the sector number. The drive then searches the
+current track by rotating the disc inside the drive at a constant
+speed of 5 revolutions per second until it matches your sector number
+with a sector number it finds on that track.
 
-The astute among you may be
-wondering what happens if you want to
-look at a sector that's on a track
-other than the current one. Well, when
-the drive is actually searching for a
-sector, the drive head (the part of
-the drive that rests just above the
-disc and receives and sends
-information) stays motionless because
-if it were moving, the vibration would
-reduce the reliability almost to zero.
-This means that as the disc rotates,
-the head always stays above a single
-track. Moving the head to a different
-track is a separate process and can
-even be done when there isn't a disc
-in the drive. The drive controlling
-chip can tell you which track it
-THINKS the head is above (it can get
-confused, for example when you change
-from drive 1 to 2), and the software
-then tells the head to either move in
-towards the centre of the disc (high
-track numbers) or out towards the edge
-(lower track numbers) a certain number
-of tracks to hopefully end up on the
-right track.
+The astute among you may be wondering what happens if you want to look
+at a sector that's on a track other than the current one. Well, when
+the drive is actually searching for a sector, the drive head (the part
+of the drive that rests just above the disc and receives and sends
+information) stays motionless because if it were moving, the vibration
+would reduce the reliability almost to zero.  This means that as the
+disc rotates, the head always stays above a single track. Moving the
+head to a different track is a separate process and can even be done
+when there isn't a disc in the drive. The drive controlling chip can
+tell you which track it THINKS the head is above (it can get confused,
+for example when you change from drive 1 to 2), and the software then
+tells the head to either move in towards the centre of the disc
+(high track numbers) or out towards the edge (lower track numbers) a
+certain number of tracks to hopefully end up on the right track.
 
-Thi s combi nat ion 0 f f ind ing the
-correct track and than searching for
-the correct sector is entirely
-controlled by software. ‘With the
+This combination of finding the correct track and then searching for
+the correct sector is entirely controlled by software. With the PLUS
+D, this software is in the ROM and all you need do is specify the
+track number in the D register and the sector number of the sector you
+require to read or write to in the E register and then make the call
+to the ROM and it will do the rest for you.
 
-PLUS D, this software is in the ROM
-and all you need do is specify the
-track number in the D register and the
-sector number of the sector you
-require to read or write to in the E
-register and then make the call to the
-ROM and it will do the rest for you.
+Most modern magnetic floppy discs can store 1 megabyte (1000
+kilobytes) of data. This is about the upper limit because the tracks
+can't be too narrow and the data can't be squashed too closely
+together without losing reliability. Hard drives have much greater
+capacities of several gigabytes but this is because the disc is
+actually part of the drive and can't be removed. This means that there
+is very little vibration as the disc rotates and so the head can be
+positioned much more accurately, allowing more tracks to be placed
+closer together.
 
-Most modern magnetic floppy discs
-can store 1 megabyte (1000 kilobytes)
-of data. This is about the upper limit
-because the tracks can’: be too narrow
-and the data can't be squashed too
+A doub1e—sided, double—density (DSDD), 80 track disc is a 1 megabyte
+disc, A common question is "Hold on a minute, the PLUS D formats its
+discs to 80 tracks each side with 10 sectors of 0.5 kilobytes each
+track giving a capacity of 80*2*10*0.5=800K (78OK if you don't include
+the 20K directory).  What's happened to the extra 200K?" Well the
+answer to this isn't entirely straight forward, but this space is
+mostly taken up as gaps between sectors and as information about each
+sector helping to organise the data on the disc.
 
-closely together without losing
-reliability. Hard drives have much
-greater capacities of several
+OK, so how is all this relevant to us? Well, whenever the software has
+told the drive to look for a sector, a special circuit in the drive is
+trying to detect a "magnetic mark" that was placed on the disc before
+each sector during the original formatting. The drive ignores
+everything until it finds one of these marks and so it's impossible to
+ever locate the middle of a sector, only the beginning.  Therefore the
+entire sector must be read or written all in one go. Also the hardware
+isn't bothered whether the software is managing to keep up or not, it
+just keeps going regardless, and so it is not possible to program
+clever software effects whilst the disc is rotating as the CPU must
+concentrate on accessing the disc — even the screen border stops
+flashing when the data bytes are actually being moved from disc to
+computer or from computer onto disc. To give you an idea of their
+speed, at their best our drives can transfer 5K in a 1/5 of a second.
 
-gigabytes but this is because the disc
-is actually part of the drive and
-can't be removed. This means that
-there is very little vibration as the
-disc rotates and so the head can be
-positioned much more accurately,
-allowing more tracks to be placed
-closer’ together.
+It doesn't matter if you do not understand everything, but some of the
+things mentioned above will certainly come in useful and it might help
+you to understand why things sometimes can go wrong!
 
-A doub1e—sided , double—density
-(DSDD), 80 track disc is a 1 megabyte
-disc, A commonquestion is "Hold on a
-minute, the PLUS D formats its discs
-to 80 tracks each side with 10 sectors
-of 0.5 kilobytes each track giving a
-capacity of 80*2*10*0.5=800K (78OK if
-you don't include the 20K directory).
-What's happened to the extra 200K?"
-Well the answer Fto this isn't entirely
-straight forward, but this space is
-mostly taken. up as gaps between
-sectors and as information about each
-sector helping to organise the data on
-the disc.
+I'm sure you all know by now that with the MGT systems, all the
+sectors are a fixed length of 512 bytes or 0.5K. As I've mentioned,
+the sectors are all numbered, and the logical order of sectors on a
+PLUS D disc is:
 
-OK, so how is all this relevant to
-us’! Well, whenever the software has
-told the drive to look for a sector, a
-special circuit in the drive is trying
-to detect a "magnetic mark" that was
-placed on the disc before each sector
-during the original formatting. The
-drive ignores everything until it
-finds one of these marks and so it's
-impossible to ever locate the middle
-of a sector, only the beginning.
-Therefore the entire sector must be
-read or written all in one go. Also
-the hardware isn't bothered whether
-the software is managing to keep up or
-not, it just keeps going regardless,
-and so it is not possible to program
-clever software effects whilst the
-disc is rotating as the CPU must
-concentrate on accessing the disc —
-even the screen border stops flashing
-when the data bytes are actually being
-moved from disc to computer or from
-computer onto disc. To give you an
-idea of their speed. at their best our
-drives can transfer 5K in a 1/5 of a
-second.
+....
+Track 0:Sectors 1,2,3,4,5,6,7,8,9,10
+Track 1:Sectors 1,2,.....,10
+....
 
-It doesn't matter if you do not
-understand everything, but some of the
-things mentioned above will certainly
-come in useful and it might help you
-to understand why things sometimes can
-go wrong!
+and so on up to how ever many tracks (less one) there are on side 1.
+e.g.
 
-I'm sure you all know by now that
-with the MG!‘ systems, all the sectors
-are a fixed length of 512 bytes or
-0.5K..As I've mentioned, the‘ sectors
-are all numbered, and the logical
-order of sectors on a PLUS D disc is:~
+....
+Track 79:Sectors 1,2,.....,10
+....
 
-Track 0:Sectors 1,2,3,4;5,6,7,s,9,1o
-Track l:Sectors 1,2,.....,l0
-
-and so on up to how ever many tracks
-(less one) there are on side 1. e.g
-
-Track 79:Sectors 1.2,. ... .10
-If the disc has 3 second side (and
-
+If the disc has a second side (and
 providing your drive has two heads)
-then the next sectors ‘are Track 128:
+then the next sectors are Track 128:
 
-Sectors 1.2,....,l0 etc.
+....
+Sectors 1,2,.....,10 etc.
+....
 
-Track 79 is nearest the centre of
-the disc, and track 128 is right at
-the edge and because the two drive
-heads usually move together, when you
-want to read track 128 after track 79.
-the heads have to move the full
-distance across the disc which causes
-quite a delay compared to normal disc
-use try it out’ using the LOAD @
-command.
+Track 79 is nearest the centre of the disc, and track 128 is right at
+the edge and because the two drive heads usually move together, when
+you want to read track 128 after track 79.  the heads have to move the
+full distance across the disc which causes quite a delay compared to
+normal disc use — try it out using the `LOAD @` command.
 
-The directory is stored from track
-0,sector 1 to track 3, sector‘ 10
-inclusive. Track 4, sector 1 onwards
-contain the actual program data. On
-any sector that is used by a file, the
-last two bytes of the sector give the
-track and sector numbers (in that
-order) of the next sector in that
-file. A file sector therefore contains
-510 bytes of file data followed by 2
-bytes of disc data which is why a 1K
-length program takes up 3 sectors
-instead of 2. when you reach the last
-file sector, the 2 disc data bytes are
-both zero.
+The directory is stored from track 0, sector 1 to track 3, sector 10
+inclusive. Track 4, sector 1 onwards contain the actual program data.
+On any sector that is used by a file, the last two bytes of the sector
+give the track and sector numbers (in that order) of the next sector
+in that file. A file sector therefore contains 510 bytes of file data
+followed by 2 bytes of disc data which is why a 1K length program
+takes up 3 sectors instead of 2. When you reach the last file sector,
+the 2 disc data bytes are both zero.
 
-The process of loading a file can be
-summarized as follows:—
+The process of loading a file can be summarized as follows:
 
-(1) Find the correct directory entry.
-(2) Get the length of the file and the
-first track and sector numbers
-from the directory entry as well
-as any other relevant information
-needed (such as auto—run line
-number).
+. Find the correct directory entry.
+. Get the length of the file and the first track and sector numbers
+  from the directory entry as well as any other relevant information
+  needed (such as auto—run line number).
+. Load the first sector of program data, transfer the data to where it
+  is required and get the next track and sector numbers by reading the
+  last two bytes of this sector.
+. Load the next sector and repeat until the whole file has been
+  loaded.
 
-Load the first sector of program
-data, transfer the data to where
-it is required and get the next
-track and sector numbers by
-reading the last two bytes of this
-sector. , ~
-Load the next sector and repeat
-until the whole file has been
-loaded.
+The number of sectors used by the file is totally irrelevant and is
+only used when displaying a catalogue.  The software knows when it has
+finished loading a file by storing the length and decreasing it until
+it reaches zero.
 
-(3)
+This method. whereby every sector gives the "disc address" of the next
+sector, means that any unused sectors near the start of as fairly full
+disc can get used up rather than leaving odd sectors here and there
+all over the disc which was the case with the Discovery drive or BBC
+disc systems.  They saved programs to the biggest available continuous
+space and if there was no space big enough for the whole file then you
+had to find a new disc to save the program on, and then load a special
+program to compress the files together on the original disc and free
+the spare sectors. But of course the disadvantage with all disc
+systems is that a file may end on the first byte of a sector leaving
+the rest of the sector unusable.
 
-(4)
-
-The number of sectors used by the
-file is totally irrelevant and is only
-used when displaying a catalogue.
-
-software knows when it has finished
-loading a file by storing the length
-and decreasing it until it reaches
-ZETO.
-
-This method. whereby every sector
-
-The"
-
-gives the "disc address" of the next
-sector, means that any unused sectors
-near the start of as fairly full disc
-can get used up rather than leaving
-odd sectors here and there all over
-the disc which was the case with the
-Discovery drive or BBC disc systems.
-They saved programs ?to the biggest
-available continuous ‘space and if
-there was no space big enough for the
-whole file then you had to find a new
-disc to save the program on, and then
-load a special program to Compress the
-files together on the original disc
-and free the spare sectors. But of
-course the disadvantage with all disc
-systems is that a file may end on the
-first byte of a ,sector leaving the
-rest of the sector unusable.
-
-All this may sound complex, but from
-a software point of view it is
-actually reasonably easy to do and
-from our point of view it is extremely
-easy as we have a number of PLUS D ROM
-routines to help us. Bear in mind that
-my new DOS does include a new EPROM
-and so the addresses given below and
-in my previous articles will be
-different when you have installed the
-new DOS.
+All this may sound complex, but from a software point of view it is
+actually reasonably easy to do and from our point of view it is
+extremely easy as we have a number of PLUS D ROM routines to help us.
+Bear in mind that my new DOS does include a new EPROM and so the
+addresses given below and in my previous articles will be different
+when you have installed the new DOS.
 
 Before using the first three
 routines below, the machine code IX
 register should be set to 15043
-(#3AC3). The‘ significance of this is
+(#3AC3). The significance of this is
 that it tells the PLUS D ROM where
 various pointers and flags are stored
 (the only exception to this rule is
@@ -1288,139 +1142,85 @@ previously you needn't worry about
 setting IX as it will have been done
 for you.
 
-1484. The routine at this address
-loads the sector specified by the DE
-register to address 15318 (#3BD6).
-Before calling this routine, set D to
-the track number (0—79=side 1.
-128—ZO7=side 2) and E to the sector
-number (1-10) of the sector you want
-to load. The routine will ’ load any
+1484\. The routine at this address loads the sector specified by the
+DE register to address 15318 (#3BD6).  Before calling this routine,
+set D to the track number (0-79=side 1.  128-2O7=side 2) and E to the
+sector number (1-10) of the sector you want to load. The routine will
+load any sector from disc including unused sectors and sectors in the
+directory.  Initially the bytes at `(IX-13)` and `(IX+14)`, (addresses
+15056 and 15057) will be set to zero, but as when reading a directory
+entry, you can point to any byte in the sector by setting them to the
+displacement from the start of the sector and then calling 3479 to set
+HL to the required position in the sector (`IX+14` holds the most
+significant byte and since the sector is only 512 bytes long, it can
+only hold 0 or 1) — SEE <<_part_4,PREVIOUS ARTICLE>>. If you just want
+HL to point to the start of the sector without altering the contents
+of `(IX+13)` & `(IX+14)`, `CALL 3462` will do the job for you.
 
-sector from disc including unused
-sectors and sectors in the directory.
-Intially the bytes at (Uh-13) and
+1919\. Once a file sector has been loaded into the PLUS D RAM using
+the above routine, this routine can be used to get an individual byte
+from that sector. It returns with the A register holding the value of
+the next byte in the file and it uses `(IX+13)` & `(IX+14)` to step
+through the sector, so if you alter their values while using this
+routine you may end up reading part of the file twice or missing out
+part of the file. If the end of a sector is reached, this routine
+automatically reads the last two bytes and loads the next sector for
+you so you could load the entire file byte by byte simply by
+repeatedly calling this routine, but there is a better method:
 
-(IX+14), (addresses 15056 and 15057)
-will be set to zero, but as when
-reading a directory entry, you can
-point to any byte in the sector by
-setting them to the displacement from
-the start of the sector and then
-calling 3479 to set HL to the required
-position in the sector (IX+l4 holds
-the most significant byte and since
-the sector is only 512 bytes long, it
-can only hold 0 or 1) - SEE PREVIOUS
-ARTICLE. If you just want HL to point
-to the start of the sector without
-altering the contents of (IX+l3) &
-(IX+l4), CALL 3462 will do the job for
-you.
+1950\. Again, the first sector in the file must have been loaded, but
+this routine will load the next 'DE' bytes from the file to address
+'HL' in RAM (can either be the normal or PLUS D RAM). If after 'DE'
+bytes the end of the file still hasn't been reached, you can still use
+this routine again or the one above to load the remaining bytes.
 
-1919. Once a file sector has been
-loaded into the PLUS D RAM using the
-above routine, this routine can be
-used to get an individual byte from
-that sector. It returns with the A
-register holding the value of the next
-byte in the file and it uses (IX+l3) &
-(IX+llo) to step through the sector, so
-if you alter their values while using
-this routine you may end up reading
-part of the file twice or missing out
-part of the file. If the end of a
-sector is reached, this routine
-automatically reads the last two bytes
-and loads the next sector for you so
-you could load the entire file byte by
-byte simply by repeatedly calling this
-routine. but there is a better method:
+The following three routines do not require IX to be set to 15043.
 
-1950. Again, the first sector in the
-file must have been loaded, but this
-routine will load the next 'BE' bytes
-from the file to address '1-EL.‘ in RAM
-(can either be the normal or PLUS D
-RAM). If after DE bytes the end of the
-file still hasn't been reached, you
-can still use this
-the one above to load the remaining
-bytes.
+12244\. This routine is in fact the `LOAD @` command and is included
+for completeness. but really you are better off using the other
+routines given above and below. It is entered with IX holding the
+address to load the sector to, 'A' holding the drive number and 'D'
+& 'E' holding the track and sector numbers respectively.
 
-The following three routines do not
-require IX to be set to 15043.
+3032\. This routine is entered with address 15874 holding a
+file-number.  The routine then uses the directory access routine to
+find that file before using the routine at 1484 to load the first
+sector in that file.
 
-1224!». This routine is in fact the
-LOAD @ command and is included for
-completeness. but really you are
-better off using the other routines
-given above and below. It is entered
-with IX holding the address to load
-the sector to, 'A' holding the drive
-number and 'D' 8: 'E' holding the track
+3068\. This routine is similar to the one above, but instead finds a
+file with a specified filename (held at address 15878 as usual) before
+loading the first sector.
 
-2-O
+These last two routines will load the first sector of any kind of
+file. The first routine roughly corresponds to the `LOAD p1` command
+and the second to `LOAD d*"filename"`. In both cases any snapshot data
+(displacement 220 in the directory entry) is moved to 16362.
 
-routine again _or I
+There is one more routine you do need to know about, and that is the
+one to change drives:
 
-and sector numbers respectively.
+1794\. This routine takes a value from address 15873 (must be 1 or 2)
+and then selects that drive to be used in all following disc
+operations. IX must equal 15043. Alternatively, you can place the
+drive number in the 'A' register and call 1797.
 
-3032. This routine is entered with
-address 1587!» holding a file-number.
-The routine then uses the directory
-access routine to find that file
-before using the routine at 148!» to
-load the first sector in that file.
-
-3068. This routine is similar to the
-one above, but instead finds a file
-with a specified filename (held at
-address 15878 as usual) before loading
-the first sector.
-
-These last two routines will load the
-first sector of any kind of file. The
-first routine roughly corresponds to
-the LOAD pl command and the second to
-LOAD d*"ﬁ1ename". In both cases any
-snapshot data (displacement 220 in the
-directory entry) is moved to 16362.
-
-There is one more routine you do need
-to know about, and that is the one to
-change drives:
-
-1794. This routine takes a value from
-address 15873 (must be 1 or 2) and
-then selects that drive to be used in
-all following disc operations. IX must
-equal 150/03. Alternatively, you can
-place the drive number in the ‘A’
-register and call 1797.
-
-The only thing I haven't yet
-mentioned is that the first 9 bytes of
-BASIC, CODE, SCREEN'$ and array files
-contain the same disc header as at
-displacement 211 in the directory
-entries, so instead of getting the
-file's start address and length from
-the directory entry, you could get
-them from the file itself. These 9
-bytes are not included in the file
-length so you must be careful not to
-treat them as part of the file.
+The only thing I haven't yet mentioned is that the first 9 bytes of
+BASIC, CODE, SCREEN$ and array files contain the same disc header as
+at displacement 211 in the directory entries, so instead of getting
+the file's start address and length from the directory entry, you
+could get them from the file itself. These 9 bytes are not included in
+the file length so you must be careful not to treat them as part of
+the file.
 
 That's all for now. Try experimenting with these routines. for example
 try writing a program to load just the screen picture of snapshot
-files it's something you should easily be able to do by now. You're
+files — it's something you should easily be able to do by now. You're
 not saving any bytes on disc so you shouldn't lose or corrupt any
 files, but when your run the program, write protect the disc just in
 case.
 
 Before using any of these routines, you will want to page in the PLUS
-D.  The simple way of doing this is to use the machine code
+D\. The simple way of doing this is to use the machine code
 instruction: `IN A,(231)` and to page out: `OUT (231),A`.
 
 I'll be back soon either with details of my new DOS, or with a routine
