@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2017-02-17
+//:revdate: 2017-03-12
 
-// Last modified 201702170110
+// Last modified 201703121818
 
 == About this document
 
@@ -415,8 +415,8 @@ when you display a full catalogue. When A=1, load the filenumber to
 15874 (#3E02) before calling the directory routine.
 
 A filename is a string of up to 10 characters which should be loaded
-to address 15878 (#3EO6) upwards. Wild- cards ("?" and "*") can be
-used but unless "*" is the last character, the filename should be
+to address 15878 (#3EO6) upwards. Wildcards ("?" and "\*") can be
+used but unless "\*" is the last character, the filename should be
 followed by spaces to make the length up to 10.
 
 When A=8 the file type should be loaded to 15877 (#3E05). Its allowed
@@ -621,483 +621,233 @@ Back next month with a super routine for the PLUS D.
 
 == Part 4
 
-In the issue before last I looked at
-the PLUS D's disc directory. I thought
-readers would like a useful machine
-code routine which adds a new BASIC
-command CAT [#n;]d1["fileneme"] where
-anything inside square brackets is
-optional (of course the drive number
-can be 1,2 or *). Note that the form
-is CAT d1 not the existing CAT 1. The
-routine produces an alphabetical
-catalogue and works by reading each
-directory entry in turn, inserting
-room at the correct position in a
-string of previous entries, and
-transferring only the data needed to
-produce the final catalogue. Once the
-end of the directory is reached the
-whole string of entries is printed
-out. The catalogue produced is
-alphabetically (not ASCII) sorted so
-that "a" is exactly the same as "A",
-etc.
+In the issue before last I looked at the PLUS D's disc directory. I
+thought readers would like a useful machine code routine which adds a
+new BASIC command `CAT [#n;]d1["filename"]` where anything inside
+square brackets is optional (of course the drive number can be 1, 2 or
+\*). Note that the form is `CAT d1` not the existing `CAT 1`. The
+routine produces an alphabetical catalogue and works by reading each
+directory entry in turn, inserting room at the correct position in a
+string of previous entries, and transferring only the data needed to
+produce the final catalogue. Once the end of the directory is reached
+the whole string of entries is printed out. The catalogue produced is
+alphabetically (not ASCII) sorted so that "a" is exactly the same as
+"A", etc.
 
-The routine is designed to be held
-completely in PLUS D RAM. To get it
-there you will have to assemble the
-code to 12628 but actually store it in
-normal RAM. After assembly save it
-hy:- SAVE d1"alphaWﬂHE address,295
+The routine is designed to be held completely in PLUS D RAM. To get it
+there you will have to assemble the code to 12628 but actually store
+it in normal RAM. After assembly save it by: `SAVE d1"alpha"CODE
+address,295`.
 
-before loading it back into shadow RAN
-with:- LOAD d1"a1ph.a"(I)DE 12628
+before loading it back into shadow RAM with: `LOAD d1"alpha"CODE
+12628`.
 
-One point to note is that it was
-written to work only with the latest
+One point to note is that it was written to work only with the latest
 version (2a) of G+DOS.
 
-10 ;PLUS D ALPHA—CAT.
-
-20 one 12628
-
-30 ALPHA:LD B,A
-
-40 AND 223
-
-so up "D"
-
-so LD A,B
-
-70 JP NZ,9722 :#25FA
-
-;Jump back if character is not a
-;"d" or "D". ie. the command is
-;of the existing form CAT 1
-
-80 CALL 9721 ;#25F9
-
-23
-
-90
-100
-110
-120
-
-130
-1&0
-
-150
-160
-170
-
-180
-
-‘ 190
-
-200
-210
-220
-230
-240
-
-250
-
-270
-
-280
-290
-300
-
-310
-320
-330
-
-360
-350
-360
-370
-380
-
-390
-400
-410
-
-By: Stephen Hhrr.
-
-CALL 9634 ;#25A2
-CALL Z,9792 ;#2640
-CALL 12616 :#3148
-CALL 1794 ;#702
-;Check synatx — exit if editing
-RST 16
-DEFW 3503 ;#DAF
-;Clear screen
-LD A,(15875) ;#3ED3
-RST' 16
-DEFW 5633 ;#1601
-;Select channel
-LD HL,MESS1
-CALL 6027 :#17813
-
-LD A,(15873) ;#3E01
-OR 48
-
-CALL 6041 ;#1799
-
-LD HL,MESS2
-
-CALL 6027 ;#l78B
-;Print top two message lines, ‘
-;also giving the drive number
-
-LD HL,START
-LD (HL),255
-LD (LAST),HL
-
-;C1ear string. ‘LAST’ points to
-;the last byte in string
-LD A,16
-CALL 2469 ;#9A5
-JR NZ,DONE
-;Jump if directory is empty
-LOOP1:LD (IX+13),l
-CALL 3479 ;#D97
-PUSH DE
-;Save track & sector numbers
-CALL 1853 ;#73D
-
-EX AF,AF'
-LD DE,START
-LD C,l6
-
-EX DE,HL
-
-;A'=filenumher I
-;HL points to start of string
-;C=displacement between entries
-;in string ‘
-;DE points to filename in
-;current directory entry
-LDOP2:PUSH DE
-
-PUSH HL
-LO0P3:LD A,(HL)
-
-420
-A30
-440
-A50
-460
-
-A70
-480
-490
-500
-510
-520
-530
-540
-
-550
-
-560
-570
-580
-590
-
-600
-610
-
-620
-630
-640
-650
-
-660
-670
-680
-690
-700
-
-710
-720
-730
-740
-
-750
-760
-
-770
-780
-
-790
-800
-810
-820
-
-OR 32
-LD B,A
-LD A,(DE)
-OR 32
-C? B
-;Convert to lower case letters
-;and compare
-JR NZ,NOT
-INC HL
-INC DE
-JR LOOPS
-NOT :POP HL
-POP DE
-LD B,O
-JR C,FOUND
-;Jump if correct positixn found
-ADD HL,BC
-:Move to next string entry
-JR LOOPZ
-FDUND:PUSH DE
-DEC DE
-LD A,(DE)
-;Get file type from directory
-;entry 1
-PUSH HL
-EX DE,HL
-
-;DE=position in string to insert
-;new entry
-
-LD HL,(LAST)
-
-PUSH HL
-
-OR A
-
-SEC HL,DE
-;HL=number of bytes above insert
-;position
-
-EX (SP),HL
-
-LD D,H
-
-LD E,L
-
-ADD HL.BC
-
-LD (LAST),HL
-4Increase 'LAST' by 16
-
-EX DE,HL »
-
-POP BC
-
-INC BC
-
-LDDR
-:Move all entries above insert
-;position
-
-POP DE
-
-POP HL
-;DE points to inserted space
-;HL points to filename in
-:directory entry
-
-LD BC,IO
-LDIR
-
-;Move filename
-EX AF,AF'
-LD (DE),A
-INC DE
-EX AF.AF'
-
-830
-840
-
-850
-860
-
-870
-
-880
-890
-
-900-
-910
-920
-930
-
-940
-
-950
-960
-970
-980
-990
-1000
-1010
-1020
-
-1030
-1040
-1050
-
-1060
-1070
-1080
-
-. 1090
-
-2&
-
-1100
-
-1110
-1120
-1130
-1140
-1150
-
-1160
-
-1170
-1180
-
-LD (DE),A
-INC DE
-;Move filenumber & file type
-CALL DATA
-LDIR
-;Move 4 more bytes of data
-FOP DE
-;Restore track & sector numbers
-CALL 2696 ;#A88
-JR Z,LOOP1
-;Jump if there are more
-;directory entries
-
-DONE :LD HL,START
-1DOP4:LD A,(HL)
-
-INC A
-
-JP Z,1148 ;#47C
-;Jump to move on to next BASIC
-;command if reached string end
-
-CALL 2459 ;#99B
-;Print the next 10 bytes as a
-;filename
-
-CALL 6039 :#1797
-
-LD A’uPn
-
-CALL 6041 :#l799
-
-PUSH HL
-
-LD L.(H1)
-
-LD H,0
-
-LD A.32 A
-
-CALL 5970 ;#1752
-;Print HL - the filenumber
-
-POP DE
-
-INC DE
-
-LD A,(DE)
-;Get the file type
-
-INC DE
-
-PUSH AF
-
-CALL DATA
-
-EX DE,HL
-
-LDIR
-;Move data back to current
-;directory entry in PLUS D RAM
-
-CALL 6039 ;#1797
-
-CALL 6039
-
-POP AF
-
-PUSH HL
-
-CALL 5787 ;#169B
-;This call takes the file type
-;from A and prints "BAS","CDE",
-;"SNP 48K",etc. If the file is
-;CODE or BASIC the routine also
-;picks up the start & length or
-:auto~run address from the
-;current directory entry and
-;prints them
-
-FOP HL
-;HL points to next string entry
-
-JR LOOPA
-DATA :DEC A
-
-1190 LD A,2I6
-1200 JR Z,SKIP
-;Jump if file is a BASIC program
-
-1210 LD A,212
-
+----
+  10 ;PLUS D ALPHA—CAT.
+  20       ORG 12628
+  30 ALPHA:LD B,A
+  40       AND 223
+  50       CP "D"
+  60       LD A,B
+  70       JP NZ,9722 ;#25FA
+     ;Jump back if character is not a
+     ;"d" or "D". ie. the command is
+     ;of the existing form CAT 1
+  80       CALL 9721 ;#25F9
+  90       CALL 9634 ;#25A2
+ 100       CALL Z,9792 ;#2640
+ 110       CALL 12616 ;#3148
+ 120       CALL 1794 ;#702
+     ;Check syntax — exit if editing
+ 130       RST 16
+ 140       DEFW 3503 ;#DAF
+     ;Clear screen
+ 150       LD A,(15875) ;#3E03
+ 160       RST 16
+ 170       DEFW 5633 ;#1601
+     ;Select channel
+ 180       LD HL,MESS1
+ 190       CALL 6027 ;#178B
+ 200       LD A,(15873) ;#3E01
+ 210       OR 48
+ 220       CALL 6041 ;#1799
+ 230       LD HL,MESS2
+ 240       CALL 6027 ;#l78B
+     ;Print top two message lines,
+     ;also giving the drive number
+ 250       LD HL,START
+ 260       LD (HL),255
+ 270       LD (LAST),HL
+     ;C1ear string. 'LAST' points to
+     ;the last byte in string
+ 280       LD A,16
+ 290       CALL 2469 ;#9A5
+ 300       JR NZ,DONE
+     ;Jump if directory is empty
+ 310 LOOP1:LD (IX+13),1
+ 320       CALL 3479 ;#D97
+ 330       PUSH DE
+     ;Save track & sector numbers
+ 340       CALL 1853 ;#73D
+ 350       EX AF,AF'
+ 360       LD DE,START
+ 370       LD C,l6
+ 380       EX DE,HL
+     ;A'=filenumher I
+     ;HL points to start of string
+     ;C=displacement between entries
+     ;in string
+     ;DE points to filename in
+     ;current directory entry
+ 390 LOOP2:PUSH DE
+ 400       PUSH HL
+ 410 LOOP3:LD A,(HL)
+ 420       OR 32
+ 430       LD B,A
+ 440       LD A,(DE)
+ 450       OR 32
+ 460       CP B
+     ;Convert to lower case letters
+     ;and compare
+ 470       JR NZ,NOT
+ 480       INC HL
+ 490       INC DE
+ 500       JR LOOPS
+ 510 NOT  :POP HL
+ 520       POP DE
+ 530       LD B,0
+ 540       JR C,FOUND
+     ;Jump if correct position found
+ 550       ADD HL,BC
+     ;Move to next string entry
+ 560       JR LOOPZ
+ 570 FOUND:PUSH DE
+ 580       DEC DE
+ 590       LD A,(DE)
+     ;Get file type from directory
+     ;entry
+ 600       PUSH HL
+ 610       EX DE,HL
+     ;DE=position in string to insert
+     ;new entry
+ 620       LD HL,(LAST)
+ 630       PUSH HL
+ 640       OR A
+ 650       SEC HL,DE
+     ;HL=number of bytes above insert
+     ;position
+ 660       EX (SP),HL
+ 670       LD D,H
+ 680       LD E,L
+ 690       ADD HL,BC
+ 700       LD (LAST),HL
+     ;Increase 'LAST' by 16
+ 710       EX DE,HL
+ 720       POP BC
+ 730       INC BC
+ 740       LDDR
+     ;Move all entries above insert
+     ;position
+ 750       POP DE
+ 760       POP HL
+     ;DE points to inserted space
+     ;HL points to filename in
+     ;directory entry
+ 770       LD BC,IO
+ 780       LDIR
+     ;Move filename
+ 790       EX AF,AF'
+ 800       LD (DE),A
+ 810       INC DE
+ 820       EX AF,AF'
+ 830       LD (DE),A
+ 840       INC DE
+     ;Move filenumber & file type
+ 850       CALL DATA
+ 860       LDIR
+     ;Move 4 more bytes of data
+ 870       POP DE
+     ;Restore track & sector numbers
+ 880       CALL 2696 ;#A88
+ 890       JR Z,LOOP1
+     ;Jump if there are more
+     ;directory entries
+ 900 DONE :LD HL,START
+ 910 LOOP4:LD A,(HL)
+ 920       INC A
+ 930       JP Z,1148 ;#47C
+     ;Jump to move on to next BASIC
+     ;command if reached string end
+ 940       CALL 2459 ;#99B
+     ;Print the next 10 bytes as a
+     ;filename
+ 950       CALL 6039 ;#1797
+ 960       LD A,"P"
+ 970       CALL 6041 ;#1799
+ 980       PUSH HL
+ 990       LD L,(HL)
+1000       LD H,0
+1010       LD A,32
+1020       CALL 5970 ;#1752
+     ;Print HL - the filenumber
+1030       POP DE
+1040       INC DE
+1050       LD A,(DE)
+     ;Get the file type
+1060       INC DE
+1070       PUSH AF
+1080       CALL DATA
+1090       EX DE,HL
+1100       LDIR
+     ;Move data back to current
+     ;directory entry in PLUS D RAM
+1110       CALL 6039 ;#1797
+1120       CALL 6039
+1130       POP AF
+1140       PUSH HL
+1150       CALL 5787 ;#169B
+     ;This call takes the file type
+     ;from A and prints "BAS","CDE",
+     ;"SNP 48K",etc. If the file is
+     ;CODE or BASIC the routine also
+     ;picks up the start & length or
+     ;auto-run address from the
+     ;current directory entry and
+     ;prints them
+1160       POP HL
+     ;HL points to next string entry
+1170       JR LOOP4
+1180 DATA :DEC A
+1190       LD A,216
+1200       JR Z,SKIP
+     ;Jump if file is a BASIC program
+1210       LD A,212
 1220 SKIP :LD (IX+13),A
-
-1230 CALL 3479 ;#D97
-
-1240 LD BC,4
-
-1250 RET
-
-;0n1y CODE requires 4 extra data
-;bytes — start & length, BASIC
-;requires 2 - the auto-run line
-znumher, all others require no‘
-;extra data at all.
-MESS1:DEFM " PLUS D ALPHA"
-DEFM "—CATALDGUE,"
-DEFM "DRIVE”," "+128
-MESS2:DEFM 13,"—— —-"
-DEFM "—-
-DEFM "-—--
-LAST :DEFW O
-START:EQU 13566 ;#34FE
-;Each entry in the string takes
-;up 16 bytes so with 80 files
-;on a disc, a maximum space of
-;1280 is required +1 for
-;the end marker
-
-1260
-1270
-1280
-1290
-1300
-1301
-1310
-1320
-
-  
-  
-
----",13+12a
+1230       CALL 3479 ;#D97
+1240       LD BC,4
+1250       RET
+     ;On1y CODE requires 4 extra data
+     ;bytes — start & length, BASIC
+     ;requires 2 - the auto-run line
+     ;numher, all others require no
+     ;extra data at all.
+1260 MESS1:DEFM " PLUS D ALPHA"
+1270       DEFM "-CATALOGUE,"
+1280       DEFM "DRIVE,":"+128
+1290 MESS2:DEFM 13,"---------"
+1300       DEFM "------------"
+1301       DEFM "--------",13+128
+1310 LAST :DEFW 0
+1320 START:EQU 13566 ;#34FE
+     ;Each entry in the string takes
+     ;up 16 bytes so with 80 files
+     ;on a disc, a maximum space of
+     ;1280 is required +1 for
+     ;the end marker
+----
 
 When you have it safely in the PLUS
 D's RAM, set it working with FORE
@@ -1201,32 +951,26 @@ Back with more PLUS D secrets soon.
 
 == Part 5
 
-A I would like to apologise for the
-delay between this article and the
-last, but things weren't really my
-fault. If you remember, the last
-article in this series included a
-listing to produce an alphabetical
-catalogue. I hope you looked through
-the listing and could see with the
-help of the comments how the routines
-we have already looked at fitted in.
-If anyone had problems, or would like
-to ask or suggest anything at all in
-connection with the series, please let
-me know via the editor.
+A I would like to apologise for the delay between this article and the
+last, but things weren't really my fault. If you remember, the last
+article in this series included a listing to produce an alphabetical
+catalogue. I hope you looked through the listing and could see with
+the help of the comments how the routines we have already looked at
+fitted in.  If anyone had problems, or would like to ask or suggest
+anything at all in connection with the series, please let me know via
+the editor.
 
 As you will have found, the routine
 does not alter the directory, it
 simply prints the entries in
 alphabetical order leaving the normal
-catalogue commend unaffected. The
+catalogue command unaffected. The
 program's biggest drawback is that
 data from the directory has to be
 stored in RAM until the final
-printout. We have to allow l.25K free
+printout. We have to allow 1.25K free
 for this just in case there happen to
-be 80 files on‘ the disc.
+be 80 files on the disc.
 
 Unfortunately, this uses up most of
 the available spare PLUS D RAM, and
@@ -1244,7 +988,7 @@ moment, if you write disc routines in
 BASIC I'm sure you will have found
 difficulties in accessing the
 directory and generally have to resort
-to the LOAD @ command. My new DOS
+to the `LOAD @` command. My new DOS
 (coming out soon) has some powerful
 commands to help you get around this
 problem, but for the moment, the
