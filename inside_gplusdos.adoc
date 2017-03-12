@@ -2,7 +2,7 @@
 :author: Stephen Warr
 //:revdate: 2017-03-12
 
-// Last modified 201703121818
+// Last modified 201703121840
 
 == About this document
 
@@ -849,103 +849,52 @@ version (2a) of G+DOS.
      ;the end marker
 ----
 
-When you have it safely in the PLUS
-D's RAM, set it working with FORE
-@1154,12628 and then try it out with
-CAT d1.
+When you have it safely in the PLUS D's RAM, set it working with `POKE
+@1154,12628` and then try it out with `CAT d1`.
 
-In use the routine will be entered
-with IX already holding 15043 (see
-above), the optional channel (#n;) has
-been dealt with and loaded to 15875
-(defau1t=2), and the filename has been
-given a default of "*". There are a
-number of cells to routines in G+DOS,
-mostly dealing with syntax checking.
-but as I think I have run out of space
-I will explain them next month. Of
-course you don't need to type in the
-program comments (given after the
-line(s) they refer to) so I ‘have not
-given them line numbers.
+In use the routine will be entered with IX already holding 15043 (see
+above), the optional channel (#n;) has been dealt with and loaded to
+15875 (defau1t=2), and the filename has been given a default of "\*".
+There are a number of calls to routines in G+DOS, mostly dealing with
+syntax checking.  but as I think I have run out of space I will
+explain them next month. Of course you don't need to type in the
+program comments (given after the line(s) they refer to) so I ‘have
+not given them line numbers.
 
-For those of you without an
-assembler I've just_managed to squeeze
-in a Basic poke program. Dont come to
-rely on this sortdof service, I wont
-always have the space. Besides,
-working with machine code without an
-assembler is just asking for
-headaches.
+For those of you without an assembler I've just_managed to squeeze in
+a BASIC poke program. Don't come to rely on this sort of service, I
+won't always have the space. Besides, working with machine code
+without an assembler is just asking for headaches.
 
-10 READ add: LET add=add—8192
-20 LET 1ine=1010
-
-25
-
-30 LET s=0: FOR f=1 T0 20
-40 READ d: FORE @add,d
-50 LET s=s+d: LET add=add+1
-60 NEXT f: READ ch
-70 IF s<>AB$ ch THEN PRINT "ERROR I
-N LINE ":line: STOP
-80 LET‘1ine=1ine+10
-90 IF ch>=0 TEEN GO TO 30
-100 POKE @ll54,12628
-110 CAT dl
+----
+  10 READ add: LET add=add—8192
+  20 LET 1ine=1010
+  30 LET s=0: FOR f=1 TO 20
+  40 READ d: FORE @add,d
+  50 LET s=s+d: LET add=add+1
+  60 NEXT f: READ ch
+  70 IF s<>ABS ch THEN PRINT "ERROR IN LINE ";line: STOP
+  80 LET line=1ine+10
+  90 IF ch>=0 THEN GO TO 30
+ 100 POKE @1154,12628
+ 110 CAT d1
 1000 DATA 12628
-1010 DATA 71,230,223,25h,68,120,19h,2
-50,37,205,249,37,205,162.3
-7,204,6h,38,205,72,2925
-1020 DATA 49,205,2,7,215,175,13,58,3,
-62,21S,l,22,33,57,50,205,1
-39,23.58.1592
-1030 DATA 1,6?,246,48,205.153,23,33,8
-7,50,205,139,23,33,254,52,
-54,255,34,l21,2078
-1040 DATA 50,62,16,205,165,9,32,91,22
-1,54,13,1,205,151,13,213,2 '
-05,61,7,8,1782
-1050 DATA 17,254.52,l4,l6,235,2l3,229
-,126,246,32,7I,26,246,32,1
-s4.32,4,35,19.2os3
-1050 DATA 24,242,225,209,6,o.56,3.9,2
-A,231,213,27,26,229,235,h2
-,121,50,229,2201
-1070 DATA 183,237,s2,227,s4,93,9.34,1
-21,s0,235,193,3,237,1s4,2o
-9,225.1,10,o,2417
-1080 DATA 237,176,8,18,19,8,18,19,205
-,40,5o,237,176,2o9,2o5,136
-,10,40,165,33,2009
-1090 DATA 254,52,125.a0,202,124,4,205
-,155,9,205,151,23,62.80,20
-5,15a,23,229,11o,2432
-1100 DATA 3s,0,62.32,2o5,e2,2a,2o9,19
-,26,19,2A5,205,AO,S0,23S,2
-37,17e,2o5.151,2259
-
-1110 DATA 23,20s,151,23,241.229,2o5,1
-55,22,225,24;206,61,62,216
-,40,2.52,212,221,25s5
-
-1120 DATA 119;13,205,151.13.1,4,o,2o1
-,32,80,76,85,83,32,68,32,6
-5,75,so,1416
-
-1130 DATA 72,55.45,e7.55,sa.05,7s,79
-71.a5,69,44,6e,a2,73.86,69
-,1e6.13,1464
-
-1140 DATA_45,45,45,45,45,45,45,45,45,
-45,4S,45,b5,A5,45,45,A5,A5
-,45,a5.9o0 .
-
-1150 DATA 45,45,A5,45,45,45.45,4
-45,4s,45,141,0,0,0,0,0,o,o
-,—681
-
-5.45.
+1010 DATA 71,230,223,254,68,120,194,250,37,205,249,37,205,162,37,204,64,38,205,72,2925
+1020 DATA 49,205,2,7,215,175,13,58,3,62,215,1,22,33,57,50,205,139,23.58,1592
+1030 DATA 1,62,246,48,205,153,23,33,87,50,205,139,23,33,254,52,54,255,34,121,2078
+1040 DATA 50,62,16,205,165,9,32,91,221,54,13,1,205,151,13,213,205,61,7,8,1782
+1050 DATA 17,254,52,14,16,235,213,229,126,246,32,71,26,246,32,184,32,4,35,19,2083
+1060 DATA 24,242,225,209,6,0,56,3,9,24,231,213,27,26,229,235,42,121,50,229,2201
+1070 DATA 183,237,82,227,84,93,9,34,121,50,235,193,3,237,184,209,225,1,10,0,2417
+1080 DATA 237,176,8,18,19,8,18,19,205,40,50,237,176,209,205,136,10,40,165,33,2009
+1090 DATA 254,52,126,60,202,124,4,205,155,9,205,151,23,62,80,205,154,23,229,110,2432
+1100 DATA 38,0,62,32,205,82,23,209,19,26,19,245,205,40,50,235,237,176,205,151,2259
+1110 DATA 23,205,151,23,241,229,205,155,22,225,24,206,61,62,216,40,2,62,212,221,2585
+1120 DATA 119,13,205,151,13,1,4,0,201,32,80,76,85,83,32,68,32,65,76,80,1416
+1130 DATA 72,65,45,67,65,84,65,76,79,71,45,69,44,68,82,73,86,69,186,13,1464
+1140 DATA 45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,900
+1150 DATA 45,45,45,45,45,45,45,45,45,45,45,45,141,0,0,0,0,0,0,0,—681
+----
 
 Back with more PLUS D secrets soon.
 
