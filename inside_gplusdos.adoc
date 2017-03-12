@@ -2,7 +2,7 @@
 :author: Stephen Warr
 //:revdate: 2017-03-12
 
-// Last modified 201703121932
+// Last modified 201703122052
 
 == About this document
 
@@ -11,13 +11,13 @@ Warr. It consists of 5 parts, and it was published in the _Format_
 magazine as follows:
 
 |===
-| Part | _Format_ issue | Date
+| Part             | _Format_ issue | Date
 
-| 1    | Vol 2 — No 8   | 1989-04
-| 2    | Vol 2 — No 9   | 1989-05
-| 3    | Vol 2 — No 10  | 1989-06
-| 4    | Vol 2 — No 12  | 1989-08
-| 5    | Vol 3 — No 8   | 1990-04
+| <<_part_1,1>>    | Vol 2 — No 8   | 1989-04
+| <<_part_2,2>>    | Vol 2 — No 9   | 1989-05
+| <<_part_3,3>>    | Vol 2 — No 10  | 1989-06
+| <<_part_4,4>>    | Vol 2 — No 12  | 1989-08
+| <<_part_5,5>>    | Vol 3 — No 8   | 1990-04
 |===
 
 This document was created from the scanned pages by Marcos Cruz
@@ -77,9 +77,9 @@ they provide a way of directing the ROM to our own routines in RAM.
 
 === PLUS D G+DOS INTERNAL SYSTEM VARIABLES
 
-[cols="1,1,10"]
+[cols=">1,>1,10"]
 |===
-| DISP | BYTE | DESCRIPTION
+| DISPLACEMENT | BYTE | DESCRIPTION
 
 | 0 | 1
 
@@ -118,10 +118,8 @@ Usually 0 or 1.
 
 | 10 | 1
 
-| Poke this with zero if  “#”, “GBP” and “(c)” are not to be
+| Poke this with zero if  “#”, “£” and “©” are not to be
 printed in bit image graphics mode.
-// XXX TODO -- GPB --> pound sign
-// XXX TODO -- (c) --> copyright
 
 | 11 | 1
 
@@ -141,9 +139,8 @@ shadow ROM will NOT be paged in, and the ‘A’ register
 will contain the code of the first character in the
 BASIC statement.
 
-| 16 | 2
-| Usually holds the value 8335 (#208F). SEE DISPLACEMENT 152.
-// XXX TODO -- link to disp. 152
+| [[v16]]16 | 2
+| Usually holds the value 8335 (#208F). See <<v152,displacement 152>>.
 
 | 18 | 8
 
@@ -160,13 +157,11 @@ should follow last code if less than 8 used.
 | Optional printer codes output when the system file is
 booted up. Usually empty.
 
-| 58 | 8 | Data for bit image graphics “GPB”.
-// XXX TODO -- GPB --> pound sign
+| 58 | 8 | Data for bit image graphics “£”.
 
 | 66 | 8 | Data for bit image graphics “#”.
 
-| 74 | 8 | Data for bit image graphics “(c)”.
-// XXX TODO -- (c) --> copyright
+| 74 | 8 | Data for bit image graphics “©”.
 
 | 82 | 8
 
@@ -244,10 +239,9 @@ before the centronics port is initialised. NB. it is
 also called by the interrupt routine, ie. 50 times a
 second. Usually holds a `RET` instruction.
 
-| 143 | 3
+| [[v143]]143 | 3
 
-| Usually holds a `RET` instruction. SEE DISPLACEMENT 152.
-// XXX TODO -- link to displacement 152
+| Usually holds a `RET` instruction. See <<v152,displacement 152>>.
 
 | 146 | 3
 
@@ -261,14 +255,14 @@ before searching the catalogue to see if the file
 exists. Exits if it doesn't or calls the above address
 to load the file. Usually holds `JP 12171`.
 
-| 152 | 3
+| [[v152]]152 | 3
 
 | This address is called 50 times a second by the
 interrupt routine. It usually holds a `JP 8773`
 instruction where there is a short routine that picks
-up the value at 8208 (displacement 16) and jumps to
+up the value at 8208 <<v16,displacement 16>> and jumps to
 the address it holds. This usually directs it to 8335
-(displacement 143), where a `RET` instruction returns
+(<<v143,displacement 143>>), where a `RET` instruction returns
 execution to the ROM.
 
 | 155 | 3
@@ -283,8 +277,8 @@ routine. Usually holds a `JP 8846` instruction.
 
 | 161 | 3
 
-| This is called continuously while waiting for
-be pressed after the snapshot button has been
+| This is called continuously while waiting for a key
+be pressed after the snapshot button has been pushed.
 Usually holds a `JP 8469` instruction.
 
 | 164 | 3
@@ -301,8 +295,8 @@ directory.
 
 == Part 2
 
-As I mentioned last month, there are four addresses at which the PLUS
-D pages itself in. These are 0, 8, 58 and 102.
+As I mentioned <<_part_1,last month>>, there are four addresses at
+which the PLUS D pages itself in. These are 0, 8, 58 and 102.
 
 Starting with the easiest to explain, location 0 is the first address
 that the ROM comes to when you switch on the computer or press the
@@ -355,7 +349,7 @@ POKE @145,0: POKE @143,195
 The final paging address at location 102 has two purposes. Whenever
 you press the snapshot button, all that is really happening is CALL
 102 (a-Non Maskable Interrupt — NMI). Secondly, this address is also
-used as a return from a RST 16(#10) call - when G+DOS is paged in it
+used as a return from a `RST 16` (#10) call - when G+DOS is paged in it
 is still possible to call a subroutine in the normal ROM.  This is
 done in exactly the same way as Interface 1 did it. The instruction
 RST 16 is used followed by two bytes of data which give the address to
@@ -384,29 +378,32 @@ The routine that does all this, and more, is held at 2469 (#09A5). It
 is called with the machine code 'A' register holding a certain value
 depending on what you want to do:
 
+[cols=">1,10"]
 |===
 | Value | Action
 
-| 1 | Searches for a file that has a given filenumber.
+| 1
+| Searches for a file that has a given filenumber.
 
-| 2 | Prints an abbreviated catalogue to the current channel. Requires
-a filename.
+| 2
+| Prints an abbreviated catalogue to the current channel. Requires a filename.
 
-| 4 | Prints a full catalogue to the current channel. Requires a
-filename.
+| 4
+| Prints a full catalogue to the current channel. Requires a filename.
 
-| 8 | Searches for a file that has a given filename and is of a given
-file type.
+| 8
+| Searches for a file that has a given filename and is of a given file type.
 
-| 16 | Searches for a file that has a given filename.
+| 16
+| Searches for a file that has a given filename.
 
-| 32 | Produces a disc map at #3A00.  Explained in a later article.
+| 32
+| Produces a disc map at 14848 (#3A00). Explained in a later article.
 
-| 64 | Exits as soon as an unused directory entry is found.
+| 64
+| Exits as soon as an unused directory entry is found.
 
 |===
-
-// XXX TODO -- link "later article" above
 
 As you can see, most require at least one extra parameter.
 
@@ -415,8 +412,8 @@ when you display a full catalogue. When A=1, load the filenumber to
 15874 (#3E02) before calling the directory routine.
 
 A filename is a string of up to 10 characters which should be loaded
-to address 15878 (#3EO6) upwards. Wildcards ("?" and "\*") can be
-used but unless "\*" is the last character, the filename should be
+to address 15878 (#3EO6) upwards. Wildcards ("?" and "*") can be
+used but unless "*" is the last character, the filename should be
 followed by spaces to make the length up to 10.
 
 When A=8 the file type should be loaded to 15877 (#3E05). Its allowed
@@ -467,22 +464,35 @@ from BASIC and so it is a little pointless, however we can also do
 several things that are impossible from BASIC and there are several
 routines in G+DOS to help us:
 
-- 2696 (#A88) Continues looking for further entries in the directory
-  after a `CALL 2469`. Note — DE must not have been altered.
-- 1853 (#73D) Calculates the filenumber of the directory entry from D
-  & E and returns the result in the A register.
-- 2452 (#994) Prints the filename of the current entry to the current
-  channel.
-- 6039 (#1797) Prints a space to the current channel.
-- 6041 (#1799) Prints the character in the A register.
-- 5958 (#1746) Prints as a decimal number the value held in HL.
-  Preceding zeros (eg. 00001) are instead printed as the character
-  held in the A register. NB. DE is altered.
-- 5956 (#1744) As above but preceding zeros are printed as spaces.
-- 5964 (#174C) As 5964 but only 4 characters are printed, ie. HL must
-  be less than 10,000.
-- 5970 (#1752) As 5958 but HL must be less than 1000.
-- 5976 (#1758) As 5958 but HL must be less than 100.
+[cols="2,10"]
+|===
+
+| 2696 (#0A88) | Continues looking for further entries in the directory
+after a `CALL 2469`. Note — DE must not have been altered.
+
+| 1853 (#073D) | Calculates the filenumber of the directory entry from
+D & E and returns the result in the A register.
+
+| 2452 (#0994) | Prints the filename of the current entry to the
+current channel.
+
+| 6039 (#1797) | Prints a space to the current channel.
+
+| 6041 (#1799) | Prints the character in the A register.
+
+| 5958 (#1746) | Prints as a decimal number the value held in HL.
+Preceding zeros (eg. 00001) are instead printed as the character held
+in the A register. NB. DE is altered.
+
+| 5956 (#1744) | As above but preceding zeros are printed as spaces.
+
+| 5964 (#174C) | As 5958 but only 4 characters are printed, ie. HL must be less than 10,000.
+
+| 5970 (#1752) | As 5958 but HL must be less than 1000.
+
+| 5976 (#1758) | As 5958 but HL must be less than 100.
+
+|===
 
 Now for another practical example.  The program below prints the
 filenumber and name of all the 48K snapshots on a disc:
@@ -555,7 +565,7 @@ follows:
 |===
 | BYTE    | CONTENTS
 
-| 0       | File Descriptor 0-11 (see last month)
+| 0       | File Descriptor 0-11 (see <<_part_2,last month>>)
 | 1-10    | File Name
 | 11      | File Sectors Used — Low
 | 12      | File Sectors Used — High
@@ -591,9 +601,9 @@ Vol 2 No 4.) they are also stored as the first nine bytes of most
 files.
 
 Once you have found the correct directory entry using the directory
-access routine at 2469 (#9A5), you can point to the data in the entry
-by loading IX+13 with the displacement, IX will already be set to
-15043 (#3AC3), and then calling the routine at 3479 (#D97). HL will
+access routine at 2469 (#09A5), you can point to the data in the entry
+by loading `IX+13` with the displacement, IX will already be set to
+15043 (#3AC3), and then calling the routine at 3479 (#0D97). HL will
 then hold the address of the data — i.e. if the directory access
 routine found a BASIC program:
 
@@ -606,14 +616,14 @@ LD D,(HL)
 ----
 
 DE now holds the auto—run line number (or #FFFF if there isn't one).
-NB. If you want to get the file type, CALL 3475 (#D93) is equivalent
-to loading IX+13 with zero before a CALL 3479.
+NB. If you want to get the file type, `CALL 3475` (#0D93) is equivalent
+to loading `IX+13` with zero before a `CALL 3479`.
 
 For those who are interested, the sector containing the directory
 entry will in fact have been loaded to address 15318 (#3BD6), i.e. in
 the PLUS D RAM. Each sector in the directory holds two entries and
-IX+14 will either hold 0 or 1. This value.  together with the value in
-IX+13.  gives a two byte displacement from 15318 so the value in IX+13
+`IX+14` will either hold 0 or 1. This value.  together with the value in
+`IX+13`.  gives a two byte displacement from 15318 so the value in `IX+13`
 alone actually gives a displacement from either 15318 or 15574
 depending on which entry is being examined.
 
@@ -625,7 +635,7 @@ In the issue before last I looked at the PLUS D's disc directory. I
 thought readers would like a useful machine code routine which adds a
 new BASIC command `CAT [#n;]d1["filename"]` where anything inside
 square brackets is optional (of course the drive number can be 1, 2 or
-\*). Note that the form is `CAT d1` not the existing `CAT 1`. The
+*). Note that the form is `CAT d1` not the existing `CAT 1`. The
 routine produces an alphabetical catalogue and works by reading each
 directory entry in turn, inserting room at the correct position in a
 string of previous entries, and transferring only the data needed to
@@ -854,7 +864,7 @@ When you have it safely in the PLUS D's RAM, set it working with `POKE
 
 In use the routine will be entered with IX already holding 15043 (see
 above), the optional channel (#n;) has been dealt with and loaded to
-15875 (defau1t=2), and the filename has been given a default of "\*".
+15875 (defau1t=2), and the filename has been given a default of "*".
 There are a number of calls to routines in G+DOS, mostly dealing with
 syntax checking.  but as I think I have run out of space I will
 explain them next month. Of course you don't need to type in the
@@ -1023,7 +1033,7 @@ is very little vibration as the disc rotates and so the head can be
 positioned much more accurately, allowing more tracks to be placed
 closer together.
 
-A doub1e—sided, double—density (DSDD), 80 track disc is a 1 megabyte
+A doub1e-sided, double-density (DSDD), 80 track disc is a 1 megabyte
 disc, A common question is "Hold on a minute, the PLUS D formats its
 discs to 80 tracks each side with 10 sectors of 0.5 kilobytes each
 track giving a capacity of 80*2*10*0.5=800K (78OK if you don't include
@@ -1127,37 +1137,32 @@ Bear in mind that my new DOS does include a new EPROM and so the
 addresses given below and in my previous articles will be different
 when you have installed the new DOS.
 
-Before using the first three
-routines below, the machine code IX
-register should be set to 15043
-(#3AC3). The significance of this is
-that it tells the PLUS D ROM where
-various pointers and flags are stored
-(the only exception to this rule is
-when you are using an opentype disc
-stream from machine code so you should
-avoid these files for the moment). If
-the directory access routine was used
-previously you needn't worry about
-setting IX as it will have been done
-for you.
+Before using the first three routines below, the machine code IX
+register should be set to 15043 (#3AC3). The significance of this is
+that it tells the PLUS D ROM where various pointers and flags are
+stored (the only exception to this rule is when you are using an
+opentype disc stream from machine code so you should avoid these files
+for the moment). If the directory access routine was used previously
+you needn't worry about setting IX as it will have been done for
+you.
 
-1484\. The routine at this address loads the sector specified by the
-DE register to address 15318 (#3BD6).  Before calling this routine,
-set D to the track number (0-79=side 1.  128-2O7=side 2) and E to the
-sector number (1-10) of the sector you want to load. The routine will
-load any sector from disc including unused sectors and sectors in the
-directory.  Initially the bytes at `(IX-13)` and `(IX+14)`, (addresses
-15056 and 15057) will be set to zero, but as when reading a directory
-entry, you can point to any byte in the sector by setting them to the
-displacement from the start of the sector and then calling 3479 to set
-HL to the required position in the sector (`IX+14` holds the most
-significant byte and since the sector is only 512 bytes long, it can
-only hold 0 or 1) — SEE <<_part_4,PREVIOUS ARTICLE>>. If you just want
-HL to point to the start of the sector without altering the contents
-of `(IX+13)` & `(IX+14)`, `CALL 3462` will do the job for you.
+1484 (#05CC):: The routine at this address loads the sector specified
+by the DE register to address 15318 (#3BD6).  Before calling this
+routine, set D to the track number (0-79=side 1.  128-2O7=side 2) and
+E to the sector number (1-10) of the sector you want to load. The
+routine will load any sector from disc including unused sectors and
+sectors in the directory.  Initially the bytes at `(IX-13)` and
+`(IX+14)`, (addresses 15056 and 15057) will be set to zero, but as
+when reading a directory entry, you can point to any byte in the
+sector by setting them to the displacement from the start of the
+sector and then calling 3479 to set HL to the required position in the
+sector (`IX+14` holds the most significant byte and since the sector
+is only 512 bytes long, it can only hold 0 or 1) — See
+<<_part_4,previous article>>. If you just want HL to point to the
+start of the sector without altering the contents of `(IX+13)` &
+`(IX+14)`, `CALL 3462` will do the job for you.
 
-1919\. Once a file sector has been loaded into the PLUS D RAM using
+1919 (#077F):: Once a file sector has been loaded into the PLUS D RAM using
 the above routine, this routine can be used to get an individual byte
 from that sector. It returns with the A register holding the value of
 the next byte in the file and it uses `(IX+13)` & `(IX+14)` to step
@@ -1168,7 +1173,7 @@ automatically reads the last two bytes and loads the next sector for
 you so you could load the entire file byte by byte simply by
 repeatedly calling this routine, but there is a better method:
 
-1950\. Again, the first sector in the file must have been loaded, but
+1950 (#079E):: Again, the first sector in the file must have been loaded, but
 this routine will load the next 'DE' bytes from the file to address
 'HL' in RAM (can either be the normal or PLUS D RAM). If after 'DE'
 bytes the end of the file still hasn't been reached, you can still use
@@ -1176,20 +1181,20 @@ this routine again or the one above to load the remaining bytes.
 
 The following three routines do not require IX to be set to 15043.
 
-12244\. This routine is in fact the `LOAD @` command and is included
+12244 (#2FD4):: This routine is in fact the `LOAD @` command and is included
 for completeness. but really you are better off using the other
 routines given above and below. It is entered with IX holding the
 address to load the sector to, 'A' holding the drive number and 'D'
 & 'E' holding the track and sector numbers respectively.
 
-3032\. This routine is entered with address 15874 holding a
+3032 (#0BD8):: This routine is entered with address 15874 holding a
 file-number.  The routine then uses the directory access routine to
 find that file before using the routine at 1484 to load the first
 sector in that file.
 
-3068\. This routine is similar to the one above, but instead finds a
-file with a specified filename (held at address 15878 as usual) before
-loading the first sector.
+3068 (#0BFC):: This routine is similar to the one above, but instead
+finds a file with a specified filename (held at address 15878 as
+usual) before loading the first sector.
 
 These last two routines will load the first sector of any kind of
 file. The first routine roughly corresponds to the `LOAD p1` command
@@ -1199,8 +1204,8 @@ and the second to `LOAD d*"filename"`. In both cases any snapshot data
 There is one more routine you do need to know about, and that is the
 one to change drives:
 
-1794\. This routine takes a value from address 15873 (must be 1 or 2)
-and then selects that drive to be used in all following disc
+1794 (#0702):: This routine takes a value from address 15873 (must be
+1 or 2) and then selects that drive to be used in all following disc
 operations. IX must equal 15043. Alternatively, you can place the
 drive number in the 'A' register and call 1797.
 
@@ -1219,8 +1224,8 @@ not saving any bytes on disc so you shouldn't lose or corrupt any
 files, but when your run the program, write protect the disc just in
 case.
 
-Before using any of these routines, you will want to page in the PLUS
-D\. The simple way of doing this is to use the machine code
+Before using any of these routines, you will want to page in the
+PLUS{sp}D. The simple way of doing this is to use the machine code
 instruction: `IN A,(231)` and to page out: `OUT (231),A`.
 
 I'll be back soon either with details of my new DOS, or with a routine
