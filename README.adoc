@@ -1,6 +1,6 @@
 = Inside G+DOS _restored_
 :author: Marcos Cruz
-:revdate: 2017-03-05
+:revdate: 2017-05-17
 
 == Description
 
@@ -21,8 +21,8 @@ I found this article series in 2016, while searching the _Format_
 magazine (which can be found in JPEG and PDF formats in the archive of
 http://worldspectrum.org[World of Spectrum]) for detailed information
 on G+DOS, during the development of
-http://programandala.net/en.program.solo_forth.html[Solo Forth], and I
-find it very useful.
+http://programandala.net/en.program.solo_forth.html[Solo Forth], and
+it was very useful.
 
 In order to make the original articles easier to read and study, and
 also to preserve them for the future, I started converting the
@@ -42,8 +42,9 @@ http://raspberrypi.org[Raspberry Pi 2].
 
 == History
 
-- 2016-03-01: Prepared the images.
+- 2016-03-01: Prepare the images.
 - 2016-04-01: First OCR.
-- 2016-04-11: Part 1 edited and finished.
-- 2017-02-14: Part 2 edited and finished.
-- 2017-02-17: Part 3 edited and finished.
+- 2016-04-11: Edit and finish part 1.
+- 2017-02-14: Edit and finish part 2.
+- 2017-02-17: Edit and finish part 3.
+- 2017-03-12: Edit and finish parts 4 and 5.
