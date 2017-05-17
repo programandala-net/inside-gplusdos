@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2017-03-12
+//:revdate: 2017-03-13
 
-// Last modified 201703122052
+// Last modified 201703131827
 
 == About this document
 
@@ -79,7 +79,7 @@ they provide a way of directing the ROM to our own routines in RAM.
 
 [cols=">1,>1,10"]
 |===
-| DISPLACEMENT | BYTE | DESCRIPTION
+| DISPLACEMENT | BYTES | DESCRIPTION
 
 | 0 | 1
 
