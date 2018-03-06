@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2017-03-13
+//:revdate: 2018-03-07
 
-// Last modified 201703131827
+// Last modified 201803070015
 
 == About this document
 
@@ -412,7 +412,7 @@ when you display a full catalogue. When A=1, load the filenumber to
 15874 (#3E02) before calling the directory routine.
 
 A filename is a string of up to 10 characters which should be loaded
-to address 15878 (#3EO6) upwards. Wildcards ("?" and "*") can be
+to address 15878 (#3EO6) upwards. Wildcards ("?" and "\*") can be
 used but unless "*" is the last character, the filename should be
 followed by spaces to make the length up to 10.
 
