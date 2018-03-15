@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2018-03-07
+//:revdate: 2018-03-15
 
-// Last modified 201803070015
+// Last modified 201803152209
 
 == About this document
 
@@ -412,7 +412,7 @@ when you display a full catalogue. When A=1, load the filenumber to
 15874 (#3E02) before calling the directory routine.
 
 A filename is a string of up to 10 characters which should be loaded
-to address 15878 (#3EO6) upwards. Wildcards ("?" and "\*") can be
+to address 15878 (#3E06) upwards. Wildcards ("?" and "\*") can be
 used but unless "*" is the last character, the filename should be
 followed by spaces to make the length up to 10.
 
@@ -510,7 +510,7 @@ filenumber and name of all the 48K snapshots on a disc:
   LD A,8
   CALL 2469
 LOOP:
-  JP NZ,8O    ; Exit if no entries
+  JP NZ,80    ; Exit if no entries
   PUSH DE
   CALL 1853
   LD H,0
@@ -1036,7 +1036,7 @@ closer together.
 A doub1e-sided, double-density (DSDD), 80 track disc is a 1 megabyte
 disc, A common question is "Hold on a minute, the PLUS D formats its
 discs to 80 tracks each side with 10 sectors of 0.5 kilobytes each
-track giving a capacity of 80*2*10*0.5=800K (78OK if you don't include
+track giving a capacity of 80*2*10*0.5=800K (780K if you don't include
 the 20K directory).  What's happened to the extra 200K?" Well the
 answer to this isn't entirely straight forward, but this space is
 mostly taken up as gaps between sectors and as information about each
@@ -1148,7 +1148,7 @@ you.
 
 1484 (#05CC):: The routine at this address loads the sector specified
 by the DE register to address 15318 (#3BD6).  Before calling this
-routine, set D to the track number (0-79=side 1.  128-2O7=side 2) and
+routine, set D to the track number (0-79=side 1.  128-207=side 2) and
 E to the sector number (1-10) of the sector you want to load. The
 routine will load any sector from disc including unused sectors and
 sectors in the directory.  Initially the bytes at `(IX-13)` and
