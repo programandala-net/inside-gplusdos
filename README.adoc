@@ -1,6 +1,6 @@
 = Inside G+DOS _restored_
 :author: Marcos Cruz
-:revdate: 2017-05-17
+:revdate: 2018-03-19
 
 == Description
 
@@ -29,6 +29,11 @@ also to preserve them for the future, I started converting the
 original scanned pages into an Asciidoctor document, which can be
 automatically converted to any other modern format.
 
+== Differences from the original
+
+- All addresses are also in hexadecimal (in the original, some
+  addresses were only in decimal).
+
 == Tools used
 
 - pdfimages and pdftoppm (from
@@ -48,3 +53,4 @@ http://raspberrypi.org[Raspberry Pi 2].
 - 2017-02-14: Edit and finish part 2.
 - 2017-02-17: Edit and finish part 3.
 - 2017-03-12: Edit and finish parts 4 and 5.
+- 2017..2018: Fix and improve minor issues.

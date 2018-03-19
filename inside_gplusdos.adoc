@@ -1,8 +1,8 @@
 = Inside G+DOS
 :author: Stephen Warr
-//:revdate: 2018-03-15
+//:revdate: 2018-03-19
 
-// Last modified 201803152209
+// Last modified 201803191814
 
 == About this document
 
@@ -21,8 +21,8 @@ magazine as follows:
 |===
 
 This document was created from the scanned pages by Marcos Cruz
-(programandala.net), in 2016 and 2017. See the README.adoc file for
-more details.
+(programandala.net), in 2016, 2017 and 2018. See the README.adoc file
+for more details.
 
 == Part 1
 
@@ -246,22 +246,22 @@ second. Usually holds a `RET` instruction.
 | 146 | 3
 
 | Calls here to load the “Auto” file. Usually holds a
-`JP 10478` instruction.
+`JP 10478` ($28EE) instruction.
 
 | 149 | 3
 
 | Calls here to transfer the header data of “Auto” file
 before searching the catalogue to see if the file
 exists. Exits if it doesn't or calls the above address
-to load the file. Usually holds `JP 12171`.
+to load the file. Usually holds `JP 12171` (#2F8B).
 
 | [[v152]]152 | 3
 
 | This address is called 50 times a second by the
-interrupt routine. It usually holds a `JP 8773`
+interrupt routine. It usually holds a `JP 8773` (#2245)
 instruction where there is a short routine that picks
 up the value at 8208 <<v16,displacement 16>> and jumps to
-the address it holds. This usually directs it to 8335
+the address it holds. This usually directs it to 8335 (#208F)
 (<<v143,displacement 143>>), where a `RET` instruction returns
 execution to the ROM.
 
@@ -273,19 +273,19 @@ version number after the system file has loaded.
 | 158 | 3
 
 | G+DOS calls here to jump to the Command Code handling
-routine. Usually holds a `JP 8846` instruction.
+routine. Usually holds a `JP 8846` (#228E) instruction.
 
 | 161 | 3
 
 | This is called continuously while waiting for a key
 be pressed after the snapshot button has been pushed.
-Usually holds a `JP 8469` instruction.
+Usually holds a `JP 8469` (#2115) instruction.
 
 | 164 | 3
 
 | Calls here before the BASIC commands are run/syntax
 checked (excluding the `POKE @` command); Usually holds
-a `JP 8359` command.
+a `JP 8359` (#20A7) command.
 
 |===
 
@@ -486,11 +486,11 @@ in the A register. NB. DE is altered.
 
 | 5956 (#1744) | As above but preceding zeros are printed as spaces.
 
-| 5964 (#174C) | As 5958 but only 4 characters are printed, ie. HL must be less than 10,000.
+| 5964 (#174C) | As 5958 (#1746) but only 4 characters are printed, ie. HL must be less than 10,000.
 
-| 5970 (#1752) | As 5958 but HL must be less than 1000.
+| 5970 (#1752) | As 5958 (#1746) but HL must be less than 1000.
 
-| 5976 (#1758) | As 5958 but HL must be less than 100.
+| 5976 (#1758) | As 5958 (#1746) but HL must be less than 100.
 
 |===
 
@@ -617,14 +617,14 @@ LD D,(HL)
 
 DE now holds the auto—run line number (or #FFFF if there isn't one).
 NB. If you want to get the file type, `CALL 3475` (#0D93) is equivalent
-to loading `IX+13` with zero before a `CALL 3479`.
+to loading `IX+13` with zero before a `CALL 3479` (#0D97).
 
 For those who are interested, the sector containing the directory
 entry will in fact have been loaded to address 15318 (#3BD6), i.e. in
 the PLUS D RAM. Each sector in the directory holds two entries and
 `IX+14` will either hold 0 or 1. This value.  together with the value in
-`IX+13`.  gives a two byte displacement from 15318 so the value in `IX+13`
-alone actually gives a displacement from either 15318 or 15574
+`IX+13`.  gives a two byte displacement from 15318 (#3BD6) so the value in `IX+13`
+alone actually gives a displacement from either 15318 (#3BD6) or 15574 (#3CD6)
 depending on which entry is being examined.
 
 Back next month with a super routine for the PLUS D.
@@ -645,7 +645,7 @@ alphabetically (not ASCII) sorted so that "a" is exactly the same as
 "A", etc.
 
 The routine is designed to be held completely in PLUS D RAM. To get it
-there you will have to assemble the code to 12628 but actually store
+there you will have to assemble the code to 12628 (#3154) but actually store
 it in normal RAM. After assembly save it by: `SAVE d1"alpha"CODE
 address,295`.
 
@@ -862,9 +862,9 @@ version (2a) of G+DOS.
 When you have it safely in the PLUS D's RAM, set it working with `POKE
 @1154,12628` and then try it out with `CAT d1`.
 
-In use the routine will be entered with IX already holding 15043 (see
+In use the routine will be entered with IX already holding 15043 (#3AC3) (see
 above), the optional channel (#n;) has been dealt with and loaded to
-15875 (defau1t=2), and the filename has been given a default of "*".
+15875 (#3E03) (default=2), and the filename has been given a default of "*".
 There are a number of calls to routines in G+DOS, mostly dealing with
 syntax checking.  but as I think I have run out of space I will
 explain them next month. Of course you don't need to type in the
@@ -1080,7 +1080,7 @@ Track 79:Sectors 1,2,.....,10
 
 If the disc has a second side (and
 providing your drive has two heads)
-then the next sectors are Track 128:
+then the next sectors are track 128:
 
 ....
 Sectors 1,2,.....,10 etc.
@@ -1152,15 +1152,15 @@ routine, set D to the track number (0-79=side 1.  128-207=side 2) and
 E to the sector number (1-10) of the sector you want to load. The
 routine will load any sector from disc including unused sectors and
 sectors in the directory.  Initially the bytes at `(IX-13)` and
-`(IX+14)`, (addresses 15056 and 15057) will be set to zero, but as
-when reading a directory entry, you can point to any byte in the
-sector by setting them to the displacement from the start of the
-sector and then calling 3479 to set HL to the required position in the
-sector (`IX+14` holds the most significant byte and since the sector
-is only 512 bytes long, it can only hold 0 or 1) — See
-<<_part_4,previous article>>. If you just want HL to point to the
+`(IX+14)`, (addresses 15056 (#3AD0) and 15057 (#3AD1)) will be set to
+zero, but as when reading a directory entry, you can point to any byte
+in the sector by setting them to the displacement from the start of
+the sector and then calling 3479 (#0D97) to set HL to the required
+position in the sector (`IX+14` holds the most significant byte and
+since the sector is only 512 bytes long, it can only hold 0 or 1) —
+See <<_part_4,previous article>>. If you just want HL to point to the
 start of the sector without altering the contents of `(IX+13)` &
-`(IX+14)`, `CALL 3462` will do the job for you.
+`(IX+14)`, `CALL 3462` (#0D86) will do the job for you.
 
 1919 (#077F):: Once a file sector has been loaded into the PLUS D RAM using
 the above routine, this routine can be used to get an individual byte
@@ -1179,7 +1179,7 @@ this routine will load the next 'DE' bytes from the file to address
 bytes the end of the file still hasn't been reached, you can still use
 this routine again or the one above to load the remaining bytes.
 
-The following three routines do not require IX to be set to 15043.
+The following three routines do not require IX to be set to 15043 (#3AC3).
 
 12244 (#2FD4):: This routine is in fact the `LOAD @` command and is included
 for completeness. but really you are better off using the other
@@ -1187,27 +1187,28 @@ routines given above and below. It is entered with IX holding the
 address to load the sector to, 'A' holding the drive number and 'D'
 & 'E' holding the track and sector numbers respectively.
 
-3032 (#0BD8):: This routine is entered with address 15874 holding a
+3032 (#0BD8):: This routine is entered with address 15874 (#3E02) holding a
 file-number.  The routine then uses the directory access routine to
-find that file before using the routine at 1484 to load the first
+find that file before using the routine at 1484 (#05CC) to load the first
 sector in that file.
 
 3068 (#0BFC):: This routine is similar to the one above, but instead
-finds a file with a specified filename (held at address 15878 as
+finds a file with a specified filename (held at address 15878 (#3E06) as
 usual) before loading the first sector.
 
 These last two routines will load the first sector of any kind of
 file. The first routine roughly corresponds to the `LOAD p1` command
 and the second to `LOAD d*"filename"`. In both cases any snapshot data
-(displacement 220 in the directory entry) is moved to 16362.
+(displacement 220 in the directory entry) is moved to 16362 (#3FEA).
 
 There is one more routine you do need to know about, and that is the
 one to change drives:
 
-1794 (#0702):: This routine takes a value from address 15873 (must be
-1 or 2) and then selects that drive to be used in all following disc
-operations. IX must equal 15043. Alternatively, you can place the
-drive number in the 'A' register and call 1797.
+1794 (#0702):: This routine takes a value from address 15873 (#3E01)
+(must be 1 or 2) and then selects that drive to be used in all
+following disc operations. IX must equal 15043 (#3AC3). Alternatively,
+you can place the drive number in the 'A' register and call 1797
+(#0705).
 
 The only thing I haven't yet mentioned is that the first 9 bytes of
 BASIC, CODE, SCREEN$ and array files contain the same disc header as
